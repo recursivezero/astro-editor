@@ -1,17 +1,19 @@
 # Task: Windows Testing & Refinement (Part B)
 
-**Issue:** https://github.com/dannysmith/astro-editor/issues/56
+**Issue:** <https://github.com/dannysmith/astro-editor/issues/56>
 
 ## Overview
 
 This task covers Windows-specific testing and refinement that **requires a Windows environment**. It should be done after Part A (Cross-Platform Preparation) is complete and merged to main.
 
 **Prerequisites:**
+
 - Part A completed and merged
 - CI producing Windows MSI artifacts
 - Windows test environment available
 
 **Scope:**
+
 - No Windows code signing (can add later if users request it)
 - No in-window menu bars - all functionality accessible via keyboard shortcuts, command palette, and buttons
 
@@ -36,6 +38,7 @@ Options include:
 IDE paths for Windows were added in Part A. Verify they work correctly.
 
 **Tasks:**
+
 - [ ] Test that VS Code is detected correctly (system and user installs)
 - [ ] Test that Cursor is detected correctly
 - [ ] Refine paths in `get_augmented_path()` in `ide.rs` if needed
@@ -47,6 +50,7 @@ IDE paths for Windows were added in Part A. Verify they work correctly.
 Verify all path operations work correctly with Windows paths.
 
 **Tasks:**
+
 - [ ] Test project opening with `C:\Users\...` paths
 - [ ] Test file operations (create, save, delete)
 - [ ] Test asset copying between directories
@@ -61,6 +65,7 @@ Verify all path operations work correctly with Windows paths.
 Verify the Windows title bar component works correctly.
 
 **Tasks:**
+
 - [ ] Verify window controls (minimize, maximize, close) work correctly
 - [ ] Test window dragging via `data-tauri-drag-region`
 - [ ] Verify touch/pen input works with `app-region: drag` CSS
@@ -75,6 +80,7 @@ Verify the Windows title bar component works correctly.
 Run through complete application testing on Windows.
 
 **Core Functionality:**
+
 - [ ] Open existing Astro project
 - [ ] Navigate file tree
 - [ ] Open and edit markdown files
@@ -86,6 +92,7 @@ Run through complete application testing on Windows.
 - [ ] Rename files
 
 **UI/UX:**
+
 - [ ] Dark mode toggle works
 - [ ] Theme persists after restart
 - [ ] Keyboard shortcuts work (Ctrl instead of Cmd)
@@ -95,17 +102,20 @@ Run through complete application testing on Windows.
 - [ ] Command palette works (Ctrl+K)
 
 **Editor:**
+
 - [ ] CodeMirror renders correctly
 - [ ] Syntax highlighting works
 - [ ] Drag and drop files into editor
 
 **Window Management:**
+
 - [ ] Window resizing works
 - [ ] Minimum size constraints enforced (1000×700)
 - [ ] Panel resizing works
 - [ ] Window opens at correct size (1400×900)
 
 **Installer/Updates:**
+
 - [ ] MSI installer works correctly
 - [ ] App launches after installation
 - [ ] Auto-updater can check for updates
@@ -118,6 +128,7 @@ Run through complete application testing on Windows.
 Document and fix any Windows-specific bugs discovered during testing.
 
 **Known Areas to Watch:**
+
 - Shell command execution differences
 - Font rendering differences
 - Window chrome and shadows

@@ -9,6 +9,7 @@
 Simple, uncontroversial deduplication opportunities that reduce fragility and magic strings without adding architectural complexity. These are all 2-5 line changes that eliminate copy-paste patterns.
 
 **Last Reviewed**: 2025-11-01 - Task updated to reflect current codebase state. Key changes:
+
 - Item #3 updated: FileItem.tsx already has `getTitle()` helper; just need to use it consistently
 - Item #5 updated: Found third location for "Open Project" flow (LeftSidebar.tsx)
 - Item #7 updated: Drag/drop helpers already partially consolidated
@@ -20,10 +21,12 @@ Simple, uncontroversial deduplication opportunities that reduce fragility and ma
 
 **Issue**: `new Date().toISOString().split('T')[0]` appears in multiple places
 **Locations**:
+
 - `src/hooks/useCreateFile.ts`
 - `src/components/frontmatter/fields/DateField.tsx`
 
 **Solution**: Create `src/lib/dates.ts`:
+
 ```typescript
 export function formatIsoDate(date: Date): string {
   return date.toISOString().split('T')[0]
@@ -42,10 +45,12 @@ export function todayIsoDate(): string {
 
 **Issue**: IDE invocation logic appears in two places with different error handling
 **Locations**:
+
 - `src/lib/commands/app-commands.ts` (`executeIdeCommand`)
 - `src/components/ui/context-menu.tsx` (inline `invoke('open_path_in_ide')`)
 
 **Solution**: Extract to `src/lib/ide.ts`:
+
 ```typescript
 export async function openInIde(path: string, ideCmd?: string): Promise<void> {
   const ide = ideCmd || useProjectStore.getState().globalSettings?.general?.ideCommand
@@ -69,11 +74,13 @@ export async function openInIde(path: string, ideCmd?: string): Promise<void> {
 **Issue**: File display name logic exists but isn't used everywhere
 **Current State**: `src/components/layout/FileItem.tsx` exports `getTitle(file, titleField)` helper
 **Locations not using it**:
+
 - `src/components/ui/context-menu.tsx:194`: Uses `file.name || file.path.split('/').pop() || 'file'`
 
 **Note**: `ReferenceField.tsx` intentionally uses a different, more comprehensive fallback (title → name → slug → id) since it's for reference lookups, not file display.
 
 **Solution**: Update context-menu.tsx to import and use the existing `getTitle()` helper:
+
 ```typescript
 import { getTitle } from '../layout/FileItem'
 
@@ -89,10 +96,12 @@ const fileName = getTitle(file, 'title') // or get titleField from settings
 
 **Issue**: `"__NONE__"` hardcoded in multiple field components
 **Locations**:
+
 - `src/components/frontmatter/fields/EnumField.tsx`
 - `src/components/frontmatter/fields/ReferenceField.tsx`
 
 **Solution**: Create `src/components/frontmatter/fields/constants.ts`:
+
 ```typescript
 export const NONE_SENTINEL = '__NONE__'
 ```
@@ -105,11 +114,13 @@ export const NONE_SENTINEL = '__NONE__'
 
 **Issue**: Three implementations of project selection dialog
 **Locations**:
+
 - `src/lib/commands/app-commands.ts:111` (command palette - Open Project)
 - `src/hooks/useLayoutEventListeners.ts:367` (menu event - menu-open-project)
 - `src/components/layout/LeftSidebar.tsx:136` (sidebar - Open Project button)
 
 **Solution**: Extract to `src/lib/projects/actions.ts`:
+
 ```typescript
 export async function openProjectViaDialog(): Promise<void> {
   try {
@@ -136,6 +147,7 @@ export async function openProjectViaDialog(): Promise<void> {
 **Location**: `src/hooks/useLayoutEventListeners.ts`
 
 **Solution**: Add local constant:
+
 ```typescript
 const DEFAULT_HOTKEY_OPTS = {
   preventDefault: true,
@@ -166,6 +178,7 @@ useHotkeys('mod+s', handleSave, DEFAULT_HOTKEY_OPTS)
 ## Non-Goals
 
 This task explicitly EXCLUDES:
+
 - Path/filename utilities abstraction (two implementations with different behaviors - keep separate)
 - Command palette config generation (explicit > generated for 5 items)
 - Point-in-rect helper (used in 2 places - Rule of Three not met)

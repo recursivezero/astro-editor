@@ -10,7 +10,7 @@
 
 **Navigation Flow**:
 
-```
+```text
 Collections List
   → Collection Root (articles/)
     → Subdirectory (2024/)
@@ -117,6 +117,7 @@ Astro Editor should support this in the left File browser sidebar. It should sho
    - extension = "md"
 
 4. **New Type: `DirectoryInfo`**:
+
    ```rust
    #[derive(Debug, Clone, Serialize, Deserialize)]
    pub struct DirectoryInfo {
@@ -690,12 +691,14 @@ onSuccess: (_, variables) => {
 
 8. **Performance Optimizations**:
    - Memoize sorted subdirectories:
+
      ```typescript
      const sortedSubdirectories = useMemo(
        () => [...subdirectories].sort((a, b) => a.name.localeCompare(b.name)),
        [subdirectories]
      )
      ```
+
    - Use getState() pattern for all callbacks to avoid render cascades
    - Consider React.memo for subdirectory items if performance issues arise
 

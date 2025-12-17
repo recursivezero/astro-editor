@@ -61,7 +61,7 @@ This task addresses the single biggest architectural technical debt in the appli
 
 ### 3.2. Target Organization Structure
 
-```
+```plaintext
 components/
 ├── layout/                 # App shell/layout only
 │   ├── Layout.tsx
@@ -351,7 +351,7 @@ After each component migration:
 
 #### **Target Structure:**
 
-```
+```plaintext
 src/components/frontmatter/
 ├── FrontmatterPanel.tsx  # Main panel component
 ├── FrontmatterPanel.test.tsx
@@ -549,8 +549,8 @@ FrontmatterFields extraction establishes patterns for:
 - [x] Remove original monolithic useAppStore
 - [x] Fix test files to use new stores (test files only)
 - [x] BugFixes
-  - [x] Open Project in IDE and Open Collection in IDE don't work in the command palette. (Open File does)
-  - [x] (unrelated to our current work) The .resizable-panel which wraps the editor (and maybe `.cm-content` too) have their min-heigh as 100vh. Because we have the unified tab bar at the top, this means the main editor will always scroll, even if the documents contents are too short for it. We should use `calc` to subtract the height of the titlebar and status bar from the min-hight so it's correct. Look for both CSS declarations and Tailwind declarations for 100vh When identifying the files that need editing here.
+    - [x] Open Project in IDE and Open Collection in IDE don't work in the command palette. (Open File does)
+    - [x] (unrelated to our current work) The .resizable-panel which wraps the editor (and maybe `.cm-content` too) have their min-heigh as 100vh. Because we have the unified tab bar at the top, this means the main editor will always scroll, even if the documents contents are too short for it. We should use `calc` to subtract the height of the titlebar and status bar from the min-hight so it's correct. Look for both CSS declarations and Tailwind declarations for 100vh When identifying the files that need editing here.
 
 ### 8.5. Field Component Extraction
 

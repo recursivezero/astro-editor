@@ -7,6 +7,7 @@ Establish architectural patterns and extract key utilities to improve testabilit
 **Total Time:** 10-15 hours (~1-2 days)
 
 **Impact:**
+
 - Clear architectural boundaries
 - More testable code structure
 - Reusable utilities across codebase
@@ -21,6 +22,7 @@ Establish architectural patterns and extract key utilities to improve testabilit
 ### Root Cause Analysis
 
 The bug was likely caused by **Item 2.2 (LeftSidebar Extraction)**:
+
 - **Boolean logic confusion**: Parameter naming (`showDrafts` vs `showDraftsOnly`) led to inverted filtering
 - **Incorrect file references**: File object references may have been duplicated instead of preserved
 - **Missing useMemo dependencies**: Stale file lists caused clicks to target wrong files
@@ -62,9 +64,11 @@ export function useCommandContext(): CommandContext {
 1. Create `src/hooks/commands/` directory
 2. Move file: `git mv src/lib/commands/command-context.ts src/hooks/commands/useCommandContext.ts`
 3. Update imports (~5-10 files):
+
    ```bash
    grep -r "from.*command-context" src/
    ```
+
    Change to: `import { useCommandContext } from '@/hooks/commands/useCommandContext'`
 4. Add barrel export in `src/hooks/commands/index.ts`
 5. Remove export from `lib/commands/index.ts` if present
@@ -76,6 +80,7 @@ pnpm run check:ts
 ```
 
 **Manual Testing (REQUIRED before proceeding to Item 1.2):**
+
 1. Open command palette (Cmd+K) - verify all commands work
 2. Open a collection and click on 3 different files - verify each opens correctly
 3. Toggle "Show Drafts Only" - verify files filter correctly
@@ -110,6 +115,7 @@ File exports both hook AND pure function. Need to split.
 #### Implementation
 
 1. Create `src/hooks/settings/useEffectiveSettings.ts`:
+
    ```typescript
    import { useProjectStore } from '@/store/projectStore'
    import { getEffectiveSettings } from '@/lib/project-registry/effective-settings'
@@ -126,9 +132,11 @@ File exports both hook AND pure function. Need to split.
    - Remove `useProjectStore` import
 
 3. Update imports (~15-20 files):
+
    ```bash
    grep -r "useEffectiveSettings" src/
    ```
+
    Change to: `import { useEffectiveSettings } from '@/hooks/settings/useEffectiveSettings'`
 
    **Important:** Files importing ONLY `getEffectiveSettings` keep existing import.
@@ -142,6 +150,7 @@ pnpm run check:ts
 ```
 
 **Manual Testing (REQUIRED before proceeding to Item 2.1):**
+
 1. Open preferences (Cmd+,) - change collection settings
 2. Verify settings apply correctly in editor
 3. Test with multiple collections - verify effective settings merge correctly (global + collection)
@@ -167,6 +176,7 @@ Extract pure functions from components/stores to improve testability and reusabi
 #### Quick Summary
 
 Extract three utility functions from editorStore (lines 17-176):
+
 - `setNestedValue` - Safely set nested values with prototype pollution protection
 - `getNestedValue` - Get nested values by path
 - `deleteNestedValue` - Delete nested values
@@ -192,6 +202,7 @@ pnpm run test:run  # Run the new object-utils tests
 ```
 
 **Manual Testing (REQUIRED before proceeding to Item 2.2):**
+
 1. Open a file and edit frontmatter fields (test setNestedValue)
 2. Verify nested object fields work (e.g., author.name)
 3. Delete frontmatter fields - verify they're removed (test deleteNestedValue)
@@ -217,6 +228,7 @@ pnpm run test:run  # Run the new object-utils tests
 Extract file filtering and sorting logic from LeftSidebar (lines 228-263) to reusable functions:
 
 Create `src/lib/files/filtering.ts`:
+
 ```typescript
 // CRITICAL: Use showDraftsOnly (NOT showDrafts) to match existing code
 export function filterFilesByDraft(
@@ -227,6 +239,7 @@ export function filterFilesByDraft(
 ```
 
 Create `src/lib/files/sorting.ts`:
+
 ```typescript
 export function sortFilesByPublishedDate(
   files: FileEntry[],
@@ -245,6 +258,7 @@ export function getPublishedDate(
 **CRITICAL PRECAUTIONS:**
 
 1. **✅ BEFORE extracting - Document current behavior:**
+
    ```bash
    # Test manually and take notes:
    # - Open a collection
@@ -269,6 +283,7 @@ export function getPublishedDate(
    - Import the new functions
    - Replace inline logic with function calls
    - ⚠️ **MUST preserve useMemo dependencies exactly:**
+
      ```typescript
      const filteredAndSortedFiles = React.useMemo((): FileEntry[] => {
        const filtered = filterFilesByDraft(files, showDraftsOnly, frontmatterMappings)
@@ -362,6 +377,7 @@ export async function openInIde(filePath: string) {
 ```
 
 **Example of hook in lib (violation):**
+
 ```typescript
 // lib/commands/command-context.ts - WRONG
 export function useCommandContext() {
@@ -369,6 +385,7 @@ export function useCommandContext() {
   // Should be in hooks/commands/useCommandContext.ts
 }
 ```
+
 ```
 
 2. **Update CLAUDE.md:**
@@ -399,6 +416,7 @@ pnpm run test:run
 ### ⚠️ CRITICAL: Test After EACH Item (Not Each Phase)
 
 **ONE ITEM AT A TIME:**
+
 1. Complete implementation for one item
 2. Run TypeScript check: `pnpm run check:ts`
 3. Run tests if new tests were added: `pnpm run test:run`
@@ -415,6 +433,7 @@ pnpm run check:all
 ### File-Click Testing (CRITICAL for Each Item)
 
 **EVERY item must pass this test:**
+
 1. Open a collection
 2. Click on first file - verify it opens correctly
 3. Click on middle file - verify it opens correctly
@@ -431,25 +450,25 @@ pnpm run check:all
 ### Task Complete When
 
 - [ ] **Phase 1 Complete:**
-  - [ ] Item 1.1: useCommandContext moved to `/hooks/commands/`
-  - [ ] Item 1.2: useEffectiveSettings moved to `/hooks/settings/`
-  - [ ] All Phase 1 manual tests pass
+    - [ ] Item 1.1: useCommandContext moved to `/hooks/commands/`
+    - [ ] Item 1.2: useEffectiveSettings moved to `/hooks/settings/`
+    - [ ] All Phase 1 manual tests pass
 
 - [ ] **Phase 2 Complete:**
-  - [ ] Item 2.1: Nested value utilities extracted to `lib/object-utils.ts` with tests
-  - [ ] Item 2.2: File filtering/sorting extracted to `lib/files/` with tests
-  - [ ] All Phase 2 manual tests pass
-  - [ ] **CRITICAL: File clicking works correctly after Item 2.2**
+    - [ ] Item 2.1: Nested value utilities extracted to `lib/object-utils.ts` with tests
+    - [ ] Item 2.2: File filtering/sorting extracted to `lib/files/` with tests
+    - [ ] All Phase 2 manual tests pass
+    - [ ] **CRITICAL: File clicking works correctly after Item 2.2**
 
 - [ ] **Phase 3 Complete:**
-  - [ ] Architecture guide updated
-  - [ ] CLAUDE.md updated
+    - [ ] Architecture guide updated
+    - [ ] CLAUDE.md updated
 
 - [ ] **Overall Quality:**
-  - [ ] All TypeScript compiles without errors
-  - [ ] All tests passing (`pnpm run test:run`)
-  - [ ] `pnpm run check:all` succeeds
-  - [ ] All manual file-click testing confirms correct behavior
+    - [ ] All TypeScript compiles without errors
+    - [ ] All tests passing (`pnpm run test:run`)
+    - [ ] `pnpm run check:all` succeeds
+    - [ ] All manual file-click testing confirms correct behavior
 
 ---
 
@@ -470,6 +489,7 @@ pnpm run check:all
 ## Key Files Reference
 
 **Files to create:**
+
 - `src/hooks/commands/useCommandContext.ts`
 - `src/hooks/commands/index.ts`
 - `src/hooks/settings/useEffectiveSettings.ts`
@@ -482,6 +502,7 @@ pnpm run check:all
 - `src/lib/files/sorting.test.ts`
 
 **Files to modify:**
+
 - `src/lib/commands/command-context.ts` (delete, moved to hooks)
 - `src/lib/project-registry/effective-settings.ts` (remove hook, keep pure function)
 - `src/store/editorStore.ts` (remove utilities, import from lib)
@@ -491,6 +512,7 @@ pnpm run check:all
 - `CLAUDE.md` (add note)
 
 **Search commands:**
+
 ```bash
 # Find useCommandContext imports
 grep -r "command-context" src/
@@ -508,8 +530,8 @@ grep -r "export.*use[A-Z]" src/lib/
 
 - **Total effort:** 10-15 hours (~1-2 days)
 - **Risk level:** Varies by item (LOW to HIGHEST)
-  - Items 1.1, 1.2, 2.1: LOW risk
-  - Item 2.2: 🔴 HIGHEST RISK - caused bug in previous attempt
+    - Items 1.1, 1.2, 2.1: LOW risk
+    - Item 2.2: 🔴 HIGHEST RISK - caused bug in previous attempt
 - **High value:** Establishes patterns, improves testability
 - **Enables Task 2:** Extracted utilities are easier to test
 - **getState() pattern is fine:** Don't refactor these (7 files use it correctly)

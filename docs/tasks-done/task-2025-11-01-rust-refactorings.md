@@ -7,6 +7,7 @@ Improve Rust backend code quality through focused refactorings that reduce compl
 **Total Time:** 2-3 weeks (can be done incrementally)
 
 **Impact:**
+
 - Reduced cyclomatic complexity (~40%)
 - Eliminated code duplication (~30 lines saved per refactoring)
 - Improved testability and maintainability
@@ -36,6 +37,7 @@ ls docs/tasks-done/task-*-testing*.md
 ```
 
 **Current Test Status:**
+
 - Total tests: 127 passing
 - Parser tests: 26 tests
 - Schema merger tests: 4 tests (needs expansion)
@@ -54,11 +56,13 @@ ls docs/tasks-done/task-*-testing*.md
 ### Current Issues
 
 Three functions have nearly identical brace-counting logic:
+
 - `extract_collections_block` (lines 146-206)
 - `extract_basic_schema` (lines 294-335)
 - `extract_schema_from_collection_block` (lines 338-368)
 
 This duplication means:
+
 - Bug fixes must be applied to all locations
 - No single source of truth for brace matching
 - Harder to handle edge cases (strings with braces, comments)
@@ -89,6 +93,7 @@ fn find_matching_closing_brace(
 
 **Important Limitation:**
 This utility performs naive character counting and does NOT handle:
+
 - Strings containing braces (e.g., `"{"` or `"}"`)
 - Comments containing braces
 - Template literals or other JavaScript string features
@@ -128,6 +133,7 @@ The current implementations also don't handle these cases, so we maintain existi
 ### Testing Strategy
 
 **Before refactoring:**
+
 ```bash
 # Run existing tests to establish baseline
 cd src-tauri
@@ -135,6 +141,7 @@ cargo test parser -- --nocapture
 ```
 
 **After refactoring:**
+
 ```bash
 # Ensure all existing tests still pass
 cargo test parser -- --nocapture
@@ -204,12 +211,14 @@ pnpm run check:all
 ### Current Issues
 
 The `extract_imports_from_content` function (~85 lines, cyclomatic complexity ~12):
+
 - Mixed concerns: import detection + empty line handling + markdown block detection
 - Nested loops for multi-line import continuation (lines 401-425)
 - Complex look-ahead logic for empty line handling (lines 427-445)
 - Difficult to understand the complete logic flow at a glance
 
 **Actual complexity drivers:**
+
 - Three different loop types: import extraction, multi-line continuation, and empty line look-ahead
 - Multiple termination conditions checked in different places
 - Markdown block detection interleaved with import parsing
@@ -286,12 +295,14 @@ fn should_skip_empty_line(lines: &[&str], current_idx: usize) -> bool {
 ### Testing Strategy
 
 **Existing test coverage** (lines 1383-1453):
+
 - Various import formats
 - Multi-line imports
 - Markdown blocks
 - Edge cases
 
 **Before refactoring:**
+
 ```bash
 cd src-tauri
 cargo test extract_imports -- --nocapture
@@ -348,6 +359,7 @@ fn test_should_skip_empty_line() {
 ```
 
 **After refactoring:**
+
 - All existing tests must pass (2 existing tests)
 - New helper function tests must pass (4 new tests)
 - Manual test with edge cases: imports without semicolons, nested quotes, markdown after imports
@@ -389,6 +401,7 @@ pnpm run check:all
 ### Current Issues
 
 The `resolve_field_path` function:
+
 - Handles both immediate field name finding AND nested parent traversal
 - Complex brace-level tracking mixed with path building (~60 lines)
 - Difficult to debug when field resolution fails for deeply nested schemas
@@ -446,16 +459,18 @@ fn resolve_field_path(schema_text: &str, position: usize) -> Vec<String> {
 ### Testing Strategy
 
 **Existing test coverage:**
+
 - 11 focused tests covering various nesting scenarios:
-  - `test_resolve_top_level_field`
-  - `test_resolve_nested_field`
-  - `test_resolve_deep_nested_field`
-  - `test_resolve_multiple_helpers`
-  - `test_resolve_multiline_nested`
-  - `test_resolve_array_of_references`
-  - And 5 more tests for complex schemas
+    - `test_resolve_top_level_field`
+    - `test_resolve_nested_field`
+    - `test_resolve_deep_nested_field`
+    - `test_resolve_multiple_helpers`
+    - `test_resolve_multiline_nested`
+    - `test_resolve_array_of_references`
+    - And 5 more tests for complex schemas
 
 **Before refactoring:**
+
 ```bash
 cd src-tauri
 cargo test resolve_field_path -- --nocapture
@@ -497,6 +512,7 @@ fn test_resolve_field_path_mixed_types() {
 ```
 
 **After refactoring:**
+
 - Run all existing tests (11 tests must pass)
 - Run new edge case tests (2+ new tests)
 - Test with real-world complex schemas from production
@@ -546,6 +562,7 @@ Three mega-functions with too many responsibilities (1077 total lines, only 4 te
 3. **`determine_field_type`** (lines 398-616): 218-line function handling all JSON Schema type variations
 
 **Specific issues with `determine_field_type`:**
+
 - Deeply nested match statements with complex conditions
 - FieldTypeInfo constructed 11+ times with repetitive boilerplate code
 - Single point of failure - any bug affects all type determinations
@@ -633,6 +650,7 @@ Before refactoring, add integration tests for existing behavior to ensure we don
 **Current state:** Only 4 tests exist for 1077 lines of code. This is insufficient.
 
 **Before refactoring:**
+
 ```bash
 cd src-tauri
 cargo test schema_merger -- --nocapture
@@ -640,6 +658,7 @@ cargo test schema_merger -- --nocapture
 ```
 
 **Add integration tests first** (before touching implementation):
+
 - Test anyOf with nullable strings, numbers, dates
 - Test arrays of primitives and objects
 - Test nested objects with various structures
@@ -686,6 +705,7 @@ fn test_handle_array_type_string_array() {
 ```
 
 **After refactoring:**
+
 - Run all existing schema merger tests (4 existing tests must pass)
 - Run new integration tests (5-10 tests must pass)
 - Run new handler unit tests (10-15 tests must pass)
@@ -829,6 +849,7 @@ Each item includes a completion milestone - tests must pass before moving to the
 
 **Created:** 2025-11-01
 **Updated:** 2025-11-01 - Pre-implementation review
+
 - Added "Before Starting Implementation" safety checks
 - Updated Item 1: Added limitation about string/comment handling
 - Rewrote Item 2: Corrected to match actual code implementation (fixed mismatch)

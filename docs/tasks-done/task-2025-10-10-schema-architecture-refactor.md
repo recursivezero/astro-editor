@@ -3,6 +3,7 @@
 **Status:** ⏳ Phase 3 Complete + Field Ordering Fix Applied - Awaiting Manual Testing
 
 **Prerequisites:**
+
 - `docs/tasks-done/task-1-better-schema-parser.md` (Completed)
 - `docs/tasks-todo/task-1-better-schema-part-2.md` (Superseded by this task)
 
@@ -15,6 +16,7 @@
 **All implementation complete, all tests passing (425 TypeScript + 58 Rust tests), all checks passing.**
 
 **What was implemented:**
+
 1. ✅ Created `src-tauri/src/schema_merger.rs` (939 lines) - Complete schema parsing and merging in Rust
 2. ✅ Added `complete_schema` field to Collection model (backward compatible with old fields)
 3. ✅ Added `deserializeCompleteSchema()` function in TypeScript
@@ -22,6 +24,7 @@
 5. ✅ All schema parsing now happens in Rust backend, frontend just deserializes
 
 **Backward compatibility maintained:**
+
 - Old `schema` and `json_schema` fields still present on Collection
 - Old TypeScript parsers (`parseJsonSchema.ts`, `parseZodReferences.ts`, `parseSchemaJson()`) still exist
 - FrontmatterPanel has fallback logic to old hybrid parsing
@@ -34,6 +37,7 @@
 **Root Cause:** Used `HashMap` in Rust which doesn't preserve insertion order from JSON schema.
 
 **Fix Applied:**
+
 1. ✅ Added `indexmap = { version = "2", features = ["serde"] }` to `Cargo.toml`
 2. ✅ Replaced all `HashMap` with `IndexMap` in `schema_merger.rs`:
    - `AstroJsonSchema.definitions`
@@ -46,6 +50,7 @@
    - Non-schema frontmatter fields appear at bottom (alphabetically sorted)
 
 **Expected Behavior After Fix:**
+
 - Fields appear in the order defined in the Zod schema
 - Title field (from settings or default) appears first
 - Extra frontmatter fields (not in schema) appear at bottom, sorted alphabetically
@@ -54,6 +59,7 @@
 ### 📝 Uncommitted Changes
 
 **Modified files:**
+
 - `src-tauri/Cargo.toml` - Added indexmap dependency
 - `src-tauri/src/schema_merger.rs` - Changed HashMap to IndexMap
 - `src-tauri/src/lib.rs` - Added schema_merger module
@@ -63,6 +69,7 @@
 - `src/components/frontmatter/FrontmatterPanel.tsx` - Added complete_schema support + title field ordering
 
 **New files:**
+
 - `src-tauri/src/schema_merger.rs` - 939 lines of schema parsing/merging logic
 
 ### ⚠️ NEXT STEPS - MANUAL TESTING REQUIRED
@@ -70,6 +77,7 @@
 Before proceeding with Phase 4 cleanup, you MUST:
 
 1. **Run dev server and test with dummy-astro-project:**
+
    ```bash
    pnpm run dev
    # Open dummy-astro-project
@@ -100,6 +108,7 @@ Before proceeding with Phase 4 cleanup, you MUST:
 ### 📊 Quality Checks Status
 
 All checks passing as of last run:
+
 - ✅ TypeScript typecheck
 - ✅ ESLint (0 errors, 0 warnings)
 - ✅ Prettier
@@ -138,6 +147,7 @@ All checks passing as of last run:
 ### Why This Happened
 
 We incrementally added features without refactoring the architecture:
+
 - Started with Zod-only parsing (Rust)
 - Added JSON schema support (TypeScript)
 - Tried to merge them in React (wrong layer)
@@ -147,12 +157,14 @@ We incrementally added features without refactoring the architecture:
 ### The Correct Architecture
 
 **Rust Backend Should:**
+
 1. Parse Astro JSON schema (if exists) → accurate type information
 2. Parse Zod schema (always available) → reference collection names
 3. **MERGE schemas in Rust** → create ONE complete schema with ALL information
 4. Return single `complete_schema` field to frontend
 
 **Frontend Should:**
+
 1. Receive complete schema from backend
 2. Deserialize into TypeScript types
 3. Render fields based on type
@@ -164,7 +176,7 @@ We incrementally added features without refactoring the architecture:
 
 ### Architecture Overview
 
-```
+```plaintext
 ┌─────────────────────────────────────┐
 │         Rust Backend                │
 │  (All parsing & merging happens)    │
@@ -209,6 +221,7 @@ We incrementally added features without refactoring the architecture:
 **The Backend knows about files, the Frontend knows about UI.**
 
 Since schema parsing requires:
+
 - Reading `content.config.ts` from disk
 - Reading `.astro/collections/*.schema.json` from disk
 - Understanding Astro's schema generation
@@ -272,6 +285,7 @@ if let ZodFieldType::Reference(collection_name) = &**inner_type {
 The TypeScript parser shows the patterns we need to replicate in Rust:
 
 **1. File-based vs Standard Collections:**
+
 ```typescript
 // Lines 63-70: Check for file-based collections
 if (collectionDef.additionalProperties &&
@@ -283,6 +297,7 @@ if (collectionDef.additionalProperties &&
 ```
 
 **2. Reference Detection:**
+
 ```typescript
 // Lines 306-321: Detects references via anyOf pattern
 function extractReferenceInfo(anyOfArray: JsonSchemaProperty[]): {
@@ -302,6 +317,7 @@ function extractReferenceInfo(anyOfArray: JsonSchemaProperty[]): {
 ```
 
 **3. Nested Object Flattening:**
+
 ```typescript
 // Lines 128-150: Flattens with dot notation
 if (fieldType.type === FieldType.Unknown &&
@@ -394,6 +410,7 @@ match parse_json_schema(collection_name, json) {
 From `docs/developer/astro-generated-conentcollection-schemas.md`, the Rust parser must handle:
 
 **1. Date Fields (anyOf with 3 formats):**
+
 ```json
 {
   "anyOf": [
@@ -405,6 +422,7 @@ From `docs/developer/astro-generated-conentcollection-schemas.md`, the Rust pars
 ```
 
 **2. Reference Fields (anyOf with 3 possible structures):**
+
 ```json
 {
   "anyOf": [
@@ -430,6 +448,7 @@ From `docs/developer/astro-generated-conentcollection-schemas.md`, the Rust pars
 ```
 
 **3. Enum Fields:**
+
 ```json
 {
   "type": "string",
@@ -438,6 +457,7 @@ From `docs/developer/astro-generated-conentcollection-schemas.md`, the Rust pars
 ```
 
 **4. Literal Fields:**
+
 ```json
 {
   "type": "string",
@@ -446,6 +466,7 @@ From `docs/developer/astro-generated-conentcollection-schemas.md`, the Rust pars
 ```
 
 **5. Arrays:**
+
 ```json
 {
   "type": "array",
@@ -456,6 +477,7 @@ From `docs/developer/astro-generated-conentcollection-schemas.md`, the Rust pars
 ```
 
 **6. Nested Objects:**
+
 ```json
 {
   "type": "object",
@@ -468,6 +490,7 @@ From `docs/developer/astro-generated-conentcollection-schemas.md`, the Rust pars
 ```
 
 **7. Discriminated Unions:**
+
 ```json
 {
   "anyOf": [
@@ -730,6 +753,7 @@ Use these as the blueprint for your Rust implementation.
 **File:** `src-tauri/src/models/collection.rs`
 
 **Changes:**
+
 ```rust
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Collection {
@@ -754,6 +778,7 @@ pub struct Collection {
 **Purpose:** Contains ALL schema parsing and merging logic
 
 **Structure:**
+
 ```rust
 use serde::{Deserialize, Serialize};
 
@@ -919,6 +944,7 @@ for collection in &mut collections {
 **File:** `src/lib/schema.ts`
 
 **Changes:**
+
 ```typescript
 // KEEP: Core interfaces (already match Rust)
 export interface SchemaField {
@@ -1031,6 +1057,7 @@ function fieldTypeFromString(typeStr: string): FieldType {
 #### Step 2.2: Remove Obsolete Files
 
 Delete these files entirely:
+
 - `src/lib/parseZodReferences.ts` - No longer needed
 - `src/lib/parseJsonSchema.ts` - Logic moved to Rust
 
@@ -1055,6 +1082,7 @@ const schema = React.useMemo(() => {
 ```
 
 **Remove:**
+
 - All hybrid parsing logic
 - All Zod reference merging logic
 - All debug logging for "before/after enhancement"
@@ -1096,6 +1124,7 @@ Once Rust implementation complete, remove fallback.
 **Rust Unit Tests (src-tauri/src/schema_merger.rs):**
 
 Create comprehensive test files:
+
 - `tests/test_json_schema_primitives.rs`
 - `tests/test_json_schema_complex_types.rs`
 - `tests/test_json_schema_references.rs`
@@ -1104,6 +1133,7 @@ Create comprehensive test files:
 Test coverage MUST include ALL patterns from Astro schema doc:
 
 **Primitives & Constraints:**
+
 - [ ] String with minLength/maxLength
 - [ ] String with format: email, uri
 - [ ] Number with min/max, exclusiveMinimum/exclusiveMaximum
@@ -1112,6 +1142,7 @@ Test coverage MUST include ALL patterns from Astro schema doc:
 - [ ] Date (anyOf with date-time, date, unix-time)
 
 **Complex Types:**
+
 - [ ] Enum (type: string, enum: [...])
 - [ ] Literal (type: string, const: "value")
 - [ ] Arrays (simple, with items schema, with minItems/maxItems)
@@ -1121,17 +1152,20 @@ Test coverage MUST include ALL patterns from Astro schema doc:
 - [ ] Unions (anyOf array - non-reference, non-date)
 
 **References:**
+
 - [ ] Single reference detection (anyOf pattern)
 - [ ] Array of references detection
 - [ ] Self-references (articles → articles)
 
 **Zod Reference Extraction:**
+
 - [ ] Extract from `reference('collectionName')`
 - [ ] Extract from `z.array(reference('collectionName'))`
 - [ ] Handle single and double quotes
 - [ ] Build correct map of field_name → collection_name
 
 **Schema Merging:**
+
 - [ ] JSON schema alone (no references)
 - [ ] JSON + Zod merge (references populated)
 - [ ] Single references get `reference_collection`
@@ -1139,11 +1173,13 @@ Test coverage MUST include ALL patterns from Astro schema doc:
 - [ ] Fallback to Zod-only when JSON schema missing/malformed
 
 **File-based Collections:**
+
 - [ ] Detect additionalProperties structure
 - [ ] Use additionalProperties as entry schema
 - [ ] Parse correctly (authors.json example)
 
 **TypeScript Unit Tests:**
+
 - [ ] `deserializeCompleteSchema()` correctly maps all fields
 - [ ] Field type enum mapping works
 - [ ] snake_case to camelCase conversion works
@@ -1151,27 +1187,29 @@ Test coverage MUST include ALL patterns from Astro schema doc:
 - [ ] Preserves all metadata (constraints, description, default, etc.)
 
 **Integration Tests:**
+
 - [ ] Load dummy-astro-project
 - [ ] Verify `articles` collection has complete schema
 - [ ] Verify `author` field has:
-  - `type: FieldType.Reference`
-  - `reference: "authors"` or `referenceCollection: "authors"`
-  - `required: false`
+    - `type: FieldType.Reference`
+    - `reference: "authors"` or `referenceCollection: "authors"`
+    - `required: false`
 - [ ] Verify `relatedArticles` field has:
-  - `type: FieldType.Array`
-  - `subType: FieldType.Reference`
-  - `subReference: "articles"`
-  - `constraints.maxLength: 3`
+    - `type: FieldType.Array`
+    - `subType: FieldType.Reference`
+    - `subReference: "articles"`
+    - `constraints.maxLength: 3`
 - [ ] Verify all field types render correctly in FrontmatterPanel
 - [ ] Verify reference dropdowns populate with correct collection data
 
 **Manual Testing:**
+
 - [ ] Open dummy-astro-project in editor
 - [ ] Check console for "Loaded complete schema for: articles" message
 - [ ] Author dropdown shows:
-  - Danny Smith
-  - Jane Doe
-  - John Developer
+    - Danny Smith
+    - Jane Doe
+    - John Developer
 - [ ] Related Articles dropdown shows article titles
 - [ ] Multi-select works for array references (show badges)
 - [ ] Selecting values updates frontmatter correctly
@@ -1180,6 +1218,7 @@ Test coverage MUST include ALL patterns from Astro schema doc:
 - [ ] No React warnings about immutability
 
 **Error Handling Tests:**
+
 - [ ] Malformed JSON schema → fallback to Zod
 - [ ] Missing JSON schema → fallback to Zod
 - [ ] Invalid Zod schema → graceful error
@@ -1193,11 +1232,13 @@ Test coverage MUST include ALL patterns from Astro schema doc:
 After migration complete and tested:
 
 **Rust:**
+
 - [ ] Remove `schema` field from Collection model
 - [ ] Remove `json_schema` field from Collection model
 - [ ] Remove old Zod parsing logic from `parser.rs` (if not used elsewhere)
 
 **TypeScript:**
+
 - [ ] Delete `parseJsonSchema.ts`
 - [ ] Delete `parseZodReferences.ts`
 - [ ] Remove all Zod parsing from `schema.ts`
@@ -1206,18 +1247,21 @@ After migration complete and tested:
 #### Step 4.2: Update Documentation
 
 **CLAUDE.md:**
+
 - [ ] Remove references to "hybrid parsing"
 - [ ] Update schema architecture section
 - [ ] Document new single-schema approach
 - [ ] Update troubleshooting section
 
 **Architecture Guide:**
+
 - [ ] Add section on schema processing
 - [ ] Document Rust-side schema merging
 - [ ] Show complete data flow diagram
 - [ ] Add decision log entry explaining refactor
 
 **Code Comments:**
+
 - [ ] Add JSDoc to `deserializeCompleteSchema()`
 - [ ] Document SchemaField interface thoroughly
 - [ ] Add Rust docs to schema_merger module
@@ -1231,6 +1275,7 @@ After migration complete and tested:
 The dummy-astro-project has test collections for validation:
 
 **authors.json** (file-based collection):
+
 ```json
 [
   { "id": "danny-smith", "name": "Danny Smith", "bio": "..." },
@@ -1240,12 +1285,14 @@ The dummy-astro-project has test collections for validation:
 ```
 
 **articles schema** (has references):
+
 ```typescript
 author: reference('authors').optional()
 relatedArticles: z.array(reference('articles')).max(3).optional()
 ```
 
 **Test files:**
+
 - `first-article.md` → `author: danny-smith`
 - `comprehensive-markdown-test.md` → `author: jane-doe`, `relatedArticles: [first-article]`
 - `second-article.md` → `author: john-developer`, `relatedArticles: [first-article, comprehensive-markdown-test]`
@@ -1310,33 +1357,38 @@ This is WHY we need the Zod schema - it has: `"referencedCollection": "authors"`
 
 ## Success Criteria
 
-### Phase 1 Complete When:
+### Phase 1 Complete When
+
 - [ ] Rust can parse JSON schema to SchemaDefinition
 - [ ] Rust can extract Zod references
 - [ ] Rust can merge them correctly
 - [ ] `complete_schema` field populated on Collections
 - [ ] All Rust tests pass
 
-### Phase 2 Complete When:
+### Phase 2 Complete When
+
 - [ ] Frontend can deserialize complete_schema
 - [ ] FrontmatterPanel has no parsing logic
 - [ ] FrontmatterPanel has no merging logic
 - [ ] Component is <50 lines for schema handling
 - [ ] All TypeScript tests pass
 
-### Phase 3 Complete When:
+### Phase 3 Complete When
+
 - [ ] Reference dropdowns work correctly
 - [ ] Dummy project fully functional
 - [ ] No console errors
 - [ ] All integration tests pass
 
-### Phase 4 Complete When:
+### Phase 4 Complete When
+
 - [ ] Old code removed
 - [ ] Documentation updated
 - [ ] No deprecated fields in Collection model
 - [ ] Code is clean and maintainable
 
-### Overall Success:
+### Overall Success
+
 - [ ] Single source of truth for schemas (`complete_schema`)
 - [ ] All parsing in appropriate layer (Rust backend)
 - [ ] React components contain only UI logic
@@ -1348,7 +1400,8 @@ This is WHY we need the Zod schema - it has: `"referencedCollection": "authors"`
 
 ## Edge Cases & Considerations
 
-### Handled:
+### Handled
+
 - ✅ JSON schema missing → Zod fallback
 - ✅ Zod schema missing → JSON-only (references won't have collection names)
 - ✅ Both missing → No schema, fields render as StringField
@@ -1356,7 +1409,8 @@ This is WHY we need the Zod schema - it has: `"referencedCollection": "authors"`
 - ✅ Self-references (articles → articles)
 - ✅ File-based collections (authors.json)
 
-### Future Work (Out of Scope):
+### Future Work (Out of Scope)
+
 - ❌ Nested references (seo.author) - requires AST parsing
 - ❌ References in array of objects - too complex for regex
 - ❌ Transform/refine indication - no UI representation yet
@@ -1380,6 +1434,7 @@ This is WHY we need the Zod schema - it has: `"referencedCollection": "authors"`
 **Supersedes:** task-1-better-schema-part-2.md (Phase 3)
 
 **Context Additions:**
+
 - Existing Rust parser infrastructure (parser.rs reference extraction)
 - TypeScript JSON schema parser implementation details
 - Serde field naming strategy (snake_case → camelCase)
@@ -1393,6 +1448,7 @@ This is WHY we need the Zod schema - it has: `"referencedCollection": "authors"`
 ## PHASE 4 CLEANUP CHECKLIST - EXECUTE AFTER MANUAL VERIFICATION
 
 > ⚠️ **IMPORTANT**: Only execute Phase 4 cleanup AFTER you have:
+>
 > 1. Run the dev server and tested with dummy-astro-project
 > 2. Verified reference dropdowns work correctly
 > 3. Verified schema parsing works for all collections
@@ -1404,12 +1460,14 @@ This is WHY we need the Zod schema - it has: `"referencedCollection": "authors"`
 During Phase 3 implementation, we intentionally kept the following code for backward compatibility:
 
 **TypeScript Files:**
+
 - ✅ `src/lib/parseJsonSchema.ts` - OLD JSON schema parser (kept for fallback)
 - ✅ `src/lib/parseZodReferences.ts` - OLD Zod reference parser (kept for fallback)
 - ✅ `src/lib/schema.ts` - Contains old Zod parsing functions (kept for fallback)
 - ✅ `src/components/frontmatter/FrontmatterPanel.tsx` - Contains hybrid parsing fallback logic
 
 **Rust Fields:**
+
 - ✅ `Collection.schema` field - OLD Zod schema JSON (kept for fallback)
 - ✅ `Collection.json_schema` field - OLD Astro JSON schema (kept for fallback)
 
@@ -1460,7 +1518,8 @@ git status
 ```
 
 **Expected git status:**
-```
+
+```text
 deleted:    src/lib/parseJsonSchema.ts
 deleted:    src/lib/parseJsonSchema.test.ts
 deleted:    src/lib/parseZodReferences.ts
@@ -1473,6 +1532,7 @@ deleted:    src/lib/parseZodReferences.ts
 **Remove these sections:**
 
 **A. Remove Zod-related type definitions (lines ~3-63):**
+
 ```typescript
 // DELETE THIS ENTIRE BLOCK:
 // Legacy Zod-based interfaces (for fallback parsing only)
@@ -1494,6 +1554,7 @@ type ZodFieldType =
 ```
 
 **B. Remove conversion helper functions:**
+
 ```typescript
 // DELETE THESE FUNCTIONS:
 function zodFieldTypeToFieldType(zodType: ZodFieldType): FieldType { ... }
@@ -1502,6 +1563,7 @@ function zodFieldToSchemaField(zodField: ZodField): SchemaField { ... }
 ```
 
 **C. Remove parseSchemaJson function:**
+
 ```typescript
 // DELETE THIS ENTIRE FUNCTION (lines ~230-283):
 export function parseSchemaJson(
@@ -1515,6 +1577,7 @@ function isValidParsedSchema(obj: unknown): obj is ParsedSchemaJson { ... }
 ```
 
 **D. Remove ParsedSchemaJson interface:**
+
 ```typescript
 // DELETE THIS INTERFACE:
 interface ParsedSchemaJson {
@@ -1524,6 +1587,7 @@ interface ParsedSchemaJson {
 ```
 
 **What to KEEP in schema.ts:**
+
 - `SchemaField` interface ✅
 - `FieldConstraints` interface ✅
 - `FieldType` enum ✅
@@ -1538,6 +1602,7 @@ interface ParsedSchemaJson {
 **File:** `src/components/frontmatter/FrontmatterPanel.tsx`
 
 **A. Remove old imports:**
+
 ```typescript
 // DELETE THESE IMPORTS:
 import { parseSchemaJson } from '../../lib/schema'  // DELETE
@@ -1547,6 +1612,7 @@ import { parseJsonSchema } from '../../lib/parseJsonSchema'  // DELETE
 **B. Replace entire schema useMemo (lines ~34-112):**
 
 **DELETE THIS:**
+
 ```typescript
 const schema = React.useMemo(() => {
   if (!currentCollection) return null
@@ -1627,6 +1693,7 @@ const schema = React.useMemo(() => {
 ```
 
 **REPLACE WITH THIS SIMPLE VERSION:**
+
 ```typescript
 const schema = React.useMemo(() => {
   if (!currentCollection?.complete_schema) return null
@@ -1648,6 +1715,7 @@ const schema = React.useMemo(() => {
 Find the `handleSchemaFieldOrderRequest` function and simplify it:
 
 **REPLACE THIS:**
+
 ```typescript
 const requestedSchema = requestedCollection?.schema
   ? parseSchemaJson(requestedCollection.schema)
@@ -1655,6 +1723,7 @@ const requestedSchema = requestedCollection?.schema
 ```
 
 **WITH THIS:**
+
 ```typescript
 const requestedSchema = requestedCollection?.complete_schema
   ? deserializeCompleteSchema(requestedCollection.complete_schema)
@@ -1668,6 +1737,7 @@ const requestedSchema = requestedCollection?.complete_schema
 **A. Remove deprecated fields:**
 
 **DELETE THESE LINES:**
+
 ```rust
 // DEPRECATED - Remove after migration
 #[serde(skip_serializing_if = "Option::is_none")]
@@ -1677,6 +1747,7 @@ pub json_schema: Option<String>,
 ```
 
 **B. Update Collection struct to:**
+
 ```rust
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Collection {
@@ -1690,6 +1761,7 @@ pub struct Collection {
 ```
 
 **C. Remove old constructor methods:**
+
 ```rust
 // DELETE THIS METHOD:
 #[allow(dead_code)]
@@ -1712,6 +1784,7 @@ pub fn with_json_schema(mut self, json_schema: String) -> Self {
 ```
 
 **D. Update `new()` method:**
+
 ```rust
 pub fn new(name: String, path: PathBuf) -> Self {
     Self {
@@ -1723,6 +1796,7 @@ pub fn new(name: String, path: PathBuf) -> Self {
 ```
 
 **E. Keep only this method:**
+
 ```rust
 #[allow(dead_code)]
 pub fn with_complete_schema(mut self, complete_schema: String) -> Self {
@@ -1740,6 +1814,7 @@ pub fn with_complete_schema(mut self, complete_schema: String) -> Self {
 **Find and DELETE these sections in `scan_project_with_content_dir()`:**
 
 **DELETE: JSON schema loading block (lines ~143-154 and similar blocks):**
+
 ```rust
 // DELETE THIS:
 // Try to load JSON schemas for each collection
@@ -1757,6 +1832,7 @@ for collection in &mut collections {
 ```
 
 **REPLACE WITH: Direct complete schema generation:**
+
 ```rust
 // Generate complete schema for each collection
 for collection in &mut collections {
@@ -1816,6 +1892,7 @@ fn generate_complete_schema(collection: &mut Collection, project_path: &str) {
 **Update test in `#[cfg(test)]` block:**
 
 **DELETE THIS TEST:**
+
 ```rust
 #[test]
 fn test_collection_with_schema() {
@@ -1840,6 +1917,7 @@ fn test_collection_with_schema() {
 ```
 
 **REPLACE WITH:**
+
 ```rust
 #[test]
 fn test_collection_with_complete_schema() {
@@ -1875,6 +1953,7 @@ pnpm run check:all
 ```
 
 **If ANY check fails:**
+
 1. Do NOT commit
 2. Review the error
 3. Fix the issue
@@ -1900,11 +1979,13 @@ pnpm run dev
 **A. Update CLAUDE.md:**
 
 **Remove these sections:**
+
 - References to "hybrid parsing"
 - References to `parseJsonSchema.ts`
 - References to `parseZodReferences.ts`
 
 **Add new section:**
+
 ```markdown
 ### Schema Architecture
 
@@ -2010,6 +2091,7 @@ Before considering Phase 4 complete, verify:
 ### What You'll Have After Phase 4
 
 **Deleted:**
+
 - ❌ `src/lib/parseJsonSchema.ts` (~10KB)
 - ❌ `src/lib/parseJsonSchema.test.ts` (~22KB)
 - ❌ `src/lib/parseZodReferences.ts` (~2.5KB)
@@ -2018,6 +2100,7 @@ Before considering Phase 4 complete, verify:
 - ❌ 2 fields from Collection struct
 
 **Result:**
+
 - ✅ Single source of truth: `complete_schema`
 - ✅ All parsing in Rust backend
 - ✅ Simple deserialization in TypeScript

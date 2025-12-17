@@ -7,6 +7,7 @@
 ## Context
 
 **Current State**: Test suite is strong with 112 passing tests running in 0.04s. Tests use temporary directories with unique names and already have good coverage of:
+
 - ✅ Basic file operations
 - ✅ Path traversal security
 - ✅ Frontmatter parsing (including nested objects, arrays, MDX imports)
@@ -19,6 +20,7 @@
 ## Problem Statement
 
 While coverage is good, we lack tests for edge cases that users WILL encounter:
+
 1. **Unicode edge cases** - emoji, RTL text, combining characters (users paste this into frontmatter)
 2. **Malformed YAML** - common typos that could corrupt data or crash the editor
 3. **Windows/Mac differences** - line endings, path separators, file naming
@@ -27,6 +29,7 @@ While coverage is good, we lack tests for edge cases that users WILL encounter:
 ## Goals
 
 Add **~15 focused tests** that cover high-probability edge cases and prevent data loss. Focus on:
+
 - **Data integrity**: Ensure we never corrupt user files
 - **Real-world input**: Test what users actually type/paste
 - **Cross-platform**: Handle Windows vs Mac differences
@@ -264,25 +267,30 @@ X"#;
 ## Implementation Plan
 
 ### Step 1: Add Unicode Tests (1 hour)
+
 - Add 6 unicode edge case tests to `src-tauri/src/commands/files.rs` test module
 - Run tests, fix any failures
 - Verify roundtrip serialization preserves unicode correctly
 
 ### Step 2: Add Malformed YAML Tests (1 hour)
+
 - Add 4 malformed YAML tests
 - Ensure parser fails gracefully (returns Err, doesn't panic or corrupt)
 - Document expected error behavior
 
 ### Step 3: Add Line Ending Tests (30 minutes)
+
 - Add 3 line ending tests
 - Verify CRLF input is handled correctly
 - Ensure serialization always outputs LF
 
 ### Step 4: Add Empty/Minimal Input Tests (30 minutes)
+
 - Add 2 minimal input tests
 - Verify edge cases in boundary conditions
 
 ### Step 5: Verify All Tests Pass (30 minutes)
+
 - Run full test suite: `cargo test --lib`
 - Fix any failures
 - Ensure tests still run fast (<1 second)
@@ -298,6 +306,7 @@ X"#;
 ## Out of Scope
 
 These are NOT high-value for a 1.0.0 editor:
+
 - ❌ Filesystem abstraction (tests already run in 0.04s)
 - ❌ In-memory filesystem (unnecessary complexity)
 - ❌ Extreme edge cases (100-level nesting, 10k arrays, 1MB strings)

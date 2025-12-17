@@ -8,9 +8,9 @@ When creating a new file inside a collection, it's currently always a markdown (
 
 - Support both Markdown (`.md`) and MDX (`.mdx`) file types
 - Use three-tier settings hierarchy (consistent with other settings):
-  - **Global default**: Applies across all projects
-  - **Project-level override**: Can override the global default for a specific project
-  - **Collection-level override**: Can override the project/global default for a specific collection
+    - **Global default**: Applies across all projects
+    - **Project-level override**: Can override the global default for a specific project
+    - **Collection-level override**: Can override the project/global default for a specific collection
 - Fallback chain: Collection → Project → Global → Hard-coded default (`'md'`)
 
 ## Implementation Plan
@@ -49,12 +49,14 @@ export interface CollectionSpecificSettings {
 **UI Component Choice**: ShadCN **ToggleGroup** with outline variant
 
 **Rationale**:
+
 - Creates a segmented control appearance (macOS-native feel)
 - Perfect for binary choices (Markdown vs MDX)
 - More visual and compact than dropdown or radio buttons
 - Accessible with proper ARIA labels
 
 **Visual appearance**:
+
 ```
 ┌─────────────┬─────────────┐
 │  Markdown   │     MDX     │  ← One option highlighted
@@ -68,6 +70,7 @@ export interface CollectionSpecificSettings {
 **Location**: Add to "General" section (SettingsSection titled "General")
 
 **Implementation**:
+
 ```tsx
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 
@@ -111,6 +114,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 **Note**: Need to destructure `globalSettings` from `usePreferences()` hook (currently not destructured but available)
 
 **Implementation**:
+
 ```tsx
 // Update the usePreferences destructuring to include globalSettings:
 const { currentProjectSettings, updateProject, projectName, globalSettings } = usePreferences()
@@ -157,6 +161,7 @@ const { currentProjectSettings, updateProject, projectName, globalSettings } = u
 **Implementation**: Similar to project-level but shows project/global inheritance
 
 **Handler function** (add alongside existing handlers):
+
 ```tsx
 const handleDefaultFileTypeChange = (
   collectionName: string,
@@ -175,6 +180,7 @@ const handleDefaultFileTypeChange = (
 ```
 
 **UI component** (add in collection's settings section):
+
 ```tsx
 <Field>
   <FieldLabel>Default File Type</FieldLabel>
@@ -256,6 +262,7 @@ export const getDefaultFileType = (
 **Line 96**: Currently hardcodes `.md` extension
 
 **Changes**:
+
 ```typescript
 // Import the helper
 import { getDefaultFileType } from '@/lib/project-registry/default-file-type'
@@ -286,6 +293,7 @@ filename = `${today}-${counter}.${fileExtension}`
 **Section**: Add to preferences/settings section
 
 **Content**:
+
 ```markdown
 ### Default File Type
 

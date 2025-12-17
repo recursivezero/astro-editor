@@ -10,12 +10,12 @@ This refactor will eliminate boilerplate loading/error state management, provide
 
 Currently, when we fetch data from the Rust backend (e.g., loading collections), our process looks like this:
 
-1.  A component mounts.
-2.  A `useEffect` hook runs.
-3.  We manually set `isLoading` to `true`.
-4.  We call `invoke(...)`.
-5.  In a `.then()`, we set the data and turn `isLoading` off.
-6.  In a `.catch()`, we set an error state and turn `isLoading` off.
+1. A component mounts.
+2. A `useEffect` hook runs.
+3. We manually set `isLoading` to `true`.
+4. We call `invoke(...)`.
+5. In a `.then()`, we set the data and turn `isLoading` off.
+6. In a `.catch()`, we set an error state and turn `isLoading` off.
 
 This is repetitive, error-prone, and has no concept of caching. If we switch away from the component and come back, we have to do it all over again.
 
@@ -31,13 +31,13 @@ This will be a multi-step process. Follow each step carefully to ensure a smooth
 
 First, we need to add the library and set up its context provider at the root of our application.
 
-1.  **Install the dependency:**
+1. **Install the dependency:**
 
     ```bash
     npm install @tanstack/react-query
     ```
 
-2.  **Set up the `QueryClientProvider`:**
+2. **Set up the `QueryClientProvider`:**
     Open `src/main.tsx` and wrap the main `<App />` component. This provides the cache to every component in our application.
 
     ```tsx
@@ -88,9 +88,9 @@ _This allows us to create keys like `queryKeys.collections('/path/to/project')`,
 
 Let's refactor the logic for loading the list of collections in the sidebar.
 
-1.  **Identify the Target:** The current logic is likely in `useAppStore`'s `loadCollections` action, which is called from a `useEffect` in a component like `Sidebar.tsx`.
+1. **Identify the Target:** The current logic is likely in `useAppStore`'s `loadCollections` action, which is called from a `useEffect` in a component like `Sidebar.tsx`.
 
-2.  **Create the Query Hook:** We will create a custom hook that encapsulates the TanStack Query logic for fetching collections. This is a best practice that keeps our components clean.
+2. **Create the Query Hook:** We will create a custom hook that encapsulates the TanStack Query logic for fetching collections. This is a best practice that keeps our components clean.
 
     **Create a new file:** `src/hooks/queries/useCollectionsQuery.ts`
 
@@ -129,7 +129,7 @@ Let's refactor the logic for loading the list of collections in the sidebar.
     }
     ```
 
-3.  **Use the Hook in the Component:** Now, we replace the old logic in `Sidebar.tsx` (or wherever it lives).
+3. **Use the Hook in the Component:** Now, we replace the old logic in `Sidebar.tsx` (or wherever it lives).
 
     ```tsx
     // src/components/Layout/Sidebar.tsx (Example)
@@ -168,7 +168,7 @@ Let's refactor the logic for loading the list of collections in the sidebar.
 
 Now let's refactor the `saveFile` action. Mutations are for creating, updating, or deleting data.
 
-1.  **Create the Mutation Hook:**
+1. **Create the Mutation Hook:**
 
     **Create a new file:** `src/hooks/mutations/useSaveFileMutation.ts`
 
@@ -217,7 +217,7 @@ Now let's refactor the `saveFile` action. Mutations are for creating, updating, 
     }
     ```
 
-2.  **Use the Mutation in a Component:**
+2. **Use the Mutation in a Component:**
 
     ```tsx
     // In a component like MainEditor.tsx or a new useGlobalShortcuts hook
@@ -254,17 +254,17 @@ After this refactor, **Zustand should no longer store server state.**
 
 - **REMOVE** `collections`, `files`, `editorContent`, `frontmatter`, etc., from the store's state. This data now lives in the TanStack Query cache.
 - **KEEP** pure UI state and identifiers in Zustand. This includes:
-  - `projectPath` (identifier used in query keys)
-  - `selectedCollectionName` (identifier)
-  - `currentFilePath` (identifier)
-  - `sidebarVisible` (pure UI state)
+    - `projectPath` (identifier used in query keys)
+    - `selectedCollectionName` (identifier)
+    - `currentFilePath` (identifier)
+    - `sidebarVisible` (pure UI state)
 
 By separating server state (in TanStack Query) from client state (in Zustand), our application becomes dramatically simpler, more performant, and easier to reason about.
 
 ## BUGS AND TASKS TO FIX
 
-- [x] The File list in the sidebar doesn't update when changes are made to the frontmatter. ie if I change `draft` to true it should update to get a red marker "Draft" pill on it. Same is true of the title. I need to leave the collectiona nd reopen it for this to update.
-- [x] If I rename a file in the sidebar (right click menu) it appears to work fine, but if I then edit its **frontmatter** and thenc ome back, it Has created a new fil. Presumably because the Saving functionality isn't aware that the file has been renamed, and so it uses the old file name to make that save, Resulting in duplicates.
+- [x] The File list in the sidebar doesn't update when changes are made to the frontmatter. ie if I change `draft` to true it should update to get a red marker "Draft" pill on it. Same is true of the title. I need to leave the collection nd reopen it for this to update.
+- [x] If I rename a file in the sidebar (right click menu) it appears to work fine, but if I then edit its **frontmatter** and then come back, it Has created a new fil. Presumably because the Saving functionality isn't aware that the file has been renamed, and so it uses the old file name to make that save, Resulting in duplicates.
 - [x] `Cmd + ,` Doesn't open the Preferences When the Markdown editor is focused, it works fine everywhere else.
 - [x] `Cmd + W` no longer closes the currently open file
 - [x] `Cmd + N` or the + icon Should create a new file in the current collection. It actually shows a toast saying "File creation is temporarily disabled during refactoring". We should fix that since we're not in the middle of refactoring.

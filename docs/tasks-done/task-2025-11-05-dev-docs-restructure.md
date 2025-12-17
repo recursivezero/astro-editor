@@ -6,7 +6,7 @@ Restructure developer documentation to combine Tauri Template's clear organizati
 
 ## Reference Materials
 
-**Tauri Template Repository**: https://github.com/dannysmith/tauri-template
+**Tauri Template Repository**: <https://github.com/dannysmith/tauri-template>
 
 **Key Template Files to Reference**:
 
@@ -24,7 +24,7 @@ Restructure developer documentation to combine Tauri Template's clear organizati
 
 **Extract from**: `architecture-guide.md` (State Management section, lines ~40-140)
 
-**Reference Template**: https://github.com/dannysmith/tauri-template/blob/main/docs/developer/state-management.md (for structure)
+**Reference Template**: <https://github.com/dannysmith/tauri-template/blob/main/docs/developer/state-management.md> (for structure)
 
 **Content to Extract** (~200-250 lines):
 
@@ -32,19 +32,19 @@ Restructure developer documentation to combine Tauri Template's clear organizati
 - Decision tree for state placement (when to use each layer)
 - Why decomposed stores? (editor/project/ui) - our specific architecture
 - Server state (TanStack Query) patterns
-  - Query keys factory pattern
-  - Automatic cache invalidation
-  - Our specific queries (collections, files, content)
+    - Query keys factory pattern
+    - Automatic cache invalidation
+    - Our specific queries (collections, files, content)
 - Client state (Zustand) patterns
-  - Store decomposition strategy
-  - Why three stores not one?
-  - getState() pattern for stable references - CRITICAL
+    - Store decomposition strategy
+    - Why three stores not one?
+    - getState() pattern for stable references - CRITICAL
 - Local state (useState) patterns
-  - When to use
-  - Common pitfalls
+    - When to use
+    - Common pitfalls
 - Integration patterns between layers
-  - Bridge pattern (store → query via events)
-  - How stores and queries interact
+    - Bridge pattern (store → query via events)
+    - How stores and queries interact
 - Real examples from editorStore, projectStore, uiStore
 
 **Critical Content to Preserve**:
@@ -60,34 +60,34 @@ Restructure developer documentation to combine Tauri Template's clear organizati
 
 **Extract from**: `architecture-guide.md` (Command Pattern section, lines ~200-280)
 
-**Reference Template**: https://github.com/dannysmith/tauri-template/blob/main/docs/developer/command-system.md (for structure)
+**Reference Template**: <https://github.com/dannysmith/tauri-template/blob/main/docs/developer/command-system.md> (for structure)
 
 **Content to Extract** (~150-200 lines):
 
 - Command pattern overview - what and why
 - Command registry architecture (globalCommandRegistry)
 - Why command pattern? (single source of truth for actions)
-  - Used by keyboard shortcuts
-  - Used by native menus
-  - Used by command palette
-  - Decouples UI from logic
+    - Used by keyboard shortcuts
+    - Used by native menus
+    - Used by command palette
+    - Decouples UI from logic
 - Command structure (id, name, group, execute function)
 - Registering commands
-  - When to register (app initialization)
-  - Where to register (app-commands.ts)
-  - Command groups ('file', 'navigation', 'edit', etc.)
+    - When to register (app initialization)
+    - Where to register (app-commands.ts)
+    - Command groups ('file', 'navigation', 'edit', etc.)
 - Executing commands
-  - From keyboard shortcuts: `globalCommandRegistry.execute('toggleBold')`
-  - From menus: via Tauri events
-  - From command palette: user selection
-  - With parameters: `execute('formatHeading', 1)`
+    - From keyboard shortcuts: `globalCommandRegistry.execute('toggleBold')`
+    - From menus: via Tauri events
+    - From command palette: user selection
+    - With parameters: `execute('formatHeading', 1)`
 - getState() pattern in commands - CRITICAL
-  - Commands need editor state but can't use hooks
-  - Example: Save command gets currentFile via getState()
+    - Commands need editor state but can't use hooks
+    - Example: Save command gets currentFile via getState()
 - Integration points
-  - keyboard-shortcuts.md (react-hotkeys-hook calls commands)
-  - Native menus (Tauri menu emits events → executes commands)
-  - Command palette (shows registered commands, executes on select)
+    - keyboard-shortcuts.md (react-hotkeys-hook calls commands)
+    - Native menus (Tauri menu emits events → executes commands)
+    - Command palette (shows registered commands, executes on select)
 - Adding new commands (step-by-step)
 - Real examples from editor commands (toggleBold, formatHeading, insertLink)
 
@@ -102,63 +102,63 @@ Restructure developer documentation to combine Tauri Template's clear organizati
 
 #### 1.3 Create `docs/developer/optimization.md`
 
-**Reference Template**: https://github.com/dannysmith/tauri-template/blob/main/docs/developer/bundle-optimization.md
+**Reference Template**: <https://github.com/dannysmith/tauri-template/blob/main/docs/developer/bundle-optimization.md>
 
 **IMPORTANT**: This is NEW content (not extracted). Use template for as a starting point, but ensure it's reflective to Astro Editor's reality.
 
 **Content to Create** (~150-200 lines):
 
 - **Overview**: Why optimization matters for desktop apps
-  - Bundle size affects download size and updates
-  - Startup time affects user experience
-  - Memory usage affects performance on older machines
+    - Bundle size affects download size and updates
+    - Startup time affects user experience
+    - Memory usage affects performance on older machines
 
 - **Current Optimizations**:
-  - React optimizations we currently use:
-    - Production builds (check package.json scripts)
-    - Tree shaking (Vite default)
-    - React.memo usage (check codebase for examples)
-  - Tauri optimizations:
-    - Bundle configuration (check tauri.conf.json)
-    - Asset handling strategy
-    - Binary size (check current .app or .dmg size)
-  - Build optimizations:
-    - Production builds
-    - Minification
-    - Source map strategy
+    - React optimizations we currently use:
+        - Production builds (check package.json scripts)
+        - Tree shaking (Vite default)
+        - React.memo usage (check codebase for examples)
+    - Tauri optimizations:
+        - Bundle configuration (check tauri.conf.json)
+        - Asset handling strategy
+        - Binary size (check current .app or .dmg size)
+    - Build optimizations:
+        - Production builds
+        - Minification
+        - Source map strategy
 
 - **Bundle Size Analysis**:
-  - How to check current bundle size
-    - Command: `pnpm run build` then check dist folder size
-    - Tools: rollup-plugin-visualizer or vite-plugin-analyze
-  - What to look for:
-    - Large dependencies (check package.json)
-    - Duplicate code
-    - Unused imports
-  - How to analyze:
-    - Add vite-plugin-visualizer to see bundle composition
-    - Use vite build --mode analyze
+    - How to check current bundle size
+        - Command: `pnpm run build` then check dist folder size
+        - Tools: rollup-plugin-visualizer or vite-plugin-analyze
+    - What to look for:
+        - Large dependencies (check package.json)
+        - Duplicate code
+        - Unused imports
+    - How to analyze:
+        - Add vite-plugin-visualizer to see bundle composition
+        - Use vite build --mode analyze
 
 - **Lazy Loading Strategy** (for future):
-  - Component lazy loading with React.lazy
-  - Route-based code splitting (if we add routing)
-  - When to lazy load vs eager load
+    - Component lazy loading with React.lazy
+    - Route-based code splitting (if we add routing)
+    - When to lazy load vs eager load
 
 - **Future Optimization Opportunities**:
-  - Dynamic imports for heavy components (PreferencesDialog, CommandPalette)
-  - Asset optimization (compress images, use WebP)
-  - Font subsetting (if we add custom fonts)
-  - Rust/WASM for computationally intensive tasks
-  - Virtual scrolling for very long file lists
+    - Dynamic imports for heavy components (PreferencesDialog, CommandPalette)
+    - Asset optimization (compress images, use WebP)
+    - Font subsetting (if we add custom fonts)
+    - Rust/WASM for computationally intensive tasks
+    - Virtual scrolling for very long file lists
 
 - **Performance Budgets** (future):
-  - Target bundle sizes
-  - Target startup time
-  - How to measure
+    - Target bundle sizes
+    - Target startup time
+    - How to measure
 
 - **Related Documentation**:
-  - Reference performance-patterns.md for React performance
-  - Reference releases.md for build process
+    - Reference performance-patterns.md for React performance
+    - Reference releases.md for build process
 
 **Goal**: Document current optimization state, provide framework for future optimization work as app grows.
 
@@ -171,27 +171,27 @@ Restructure developer documentation to combine Tauri Template's clear organizati
 **Content to Create** (~100-150 lines initially, will grow over time):
 
 - **Overview**: Purpose of this guide
-  - Common UI patterns across the application
-  - ShadCN/ui best practices specific to our app
-  - Solutions to common rendering/styling issues
+    - Common UI patterns across the application
+    - ShadCN/ui best practices specific to our app
+    - Solutions to common rendering/styling issues
 
 - **ShadCN/ui Patterns**:
-  - Brief intro to shadcn/ui usage in our app
-  - How we customize components
-  - Common component patterns we use
+    - Brief intro to shadcn/ui usage in our app
+    - How we customize components
+    - Common component patterns we use
 
 - **Icon Button Patterns** (from unified-title-bar.md):
-  - SVG positioning fix for disabled buttons
-  - Problem: 1-pixel shift when disabled attribute applied
-  - Solution: Always apply transform fix
-  - Example code showing the pattern
-  - Explanation of why it works
+    - SVG positioning fix for disabled buttons
+    - Problem: 1-pixel shift when disabled attribute applied
+    - Solution: Always apply transform fix
+    - Example code showing the pattern
+    - Explanation of why it works
 
 - **Future Patterns** (placeholder sections for growth):
-  - Form field patterns
-  - Dialog patterns
-  - Layout patterns
-  - Animation patterns
+    - Form field patterns
+    - Dialog patterns
+    - Layout patterns
+    - Animation patterns
 
 **Critical Content to Preserve** (from unified-title-bar.md lines 80-102):
 
@@ -251,6 +251,7 @@ Update file names for clarity and consistency:
 **Where to move it**: Move to new `ui-patterns.md` guide (see Phase 1.4)
 
 **Why remove this doc**:
+
 - Too component-specific (violates philosophy in docs/README.md)
 - Most content is self-evident from component code
 - Only unique value is the SVG fix, which fits better as a pattern in architecture guide
@@ -261,6 +262,7 @@ Update file names for clarity and consistency:
 ### Phase 4: Update Existing Files
 
 #### 4.1 Update `architecture-guide.md`
+
 **Current size**: 612 lines
 **Target size**: ~450-500 lines
 
@@ -278,6 +280,7 @@ Update file names for clarity and consistency:
      - Integration patterns between layers
      - Real-world examples from all three stores
    - **Add reference at end of simplified section**:
+
      ```markdown
      For comprehensive coverage including store decomposition strategy,
      bridge pattern details, and extensive examples, see
@@ -296,6 +299,7 @@ Update file names for clarity and consistency:
      - Multiple examples
      - Step-by-step guide for adding commands
    - **Add reference at end of simplified section**:
+
      ```markdown
      For detailed command implementation guide including registration,
      integration with keyboard shortcuts and menus, and examples,
@@ -393,34 +397,34 @@ User has already updated this file. Verify it matches final structure:
 
 ### System Documentation (9)
 
-6. `keyboard-shortcuts.md` - Keep
-7. `notifications.md` ← RENAMED
-8. `logging.md` - Keep
-9. `preferences-system.md` - Keep
-10. `schema-system.md` - Keep
-11. `form-patterns.md` - Keep
-12. `color-system.md` - Keep
-13. `editor-styles.md` - Keep
-14. `recovery-system.md` - Keep
+1. `keyboard-shortcuts.md` - Keep
+2. `notifications.md` ← RENAMED
+3. `logging.md` - Keep
+4. `preferences-system.md` - Keep
+5. `schema-system.md` - Keep
+6. `form-patterns.md` - Keep
+7. `color-system.md` - Keep
+8. `editor-styles.md` - Keep
+9. `recovery-system.md` - Keep
 
 ### Implementation (2)
 
-15. `testing.md` ← RENAMED
-16. `optimization.md` ← NEW
+1. `testing.md` ← RENAMED
+2. `optimization.md` ← NEW
 
 ### Reference & Decisions (2)
 
-17. `decisions.md` - Keep
-18. `astro-generated-contentcollection-schemas.md` - Keep
+1. `decisions.md` - Keep
+2. `astro-generated-contentcollection-schemas.md` - Keep
 
 ### Feature Examples (1)
 
-19. `feature-image-preview.md` ← RENAMED
+1. `feature-image-preview.md` ← RENAMED
 
 ### Operational (2)
 
-20. `releases.md` ← RENAMED
-21. `apple-signing-setup.md` - Keep
+1. `releases.md` ← RENAMED
+2. `apple-signing-setup.md` - Keep
 
 ---
 
@@ -457,14 +461,18 @@ User has already updated this file. Verify it matches final structure:
    - Add reference to command-system.md in Integration section
    - Explain that shortcuts execute commands from registry
 4. **Search for all references to renamed/removed files**:
+
    ```bash
    rg "performance-guide|toast-system|testing-guide|release-process|image-preview-implementation|unified-title-bar" docs/ --type md
    ```
+
 5. **Update all found references** to new file names
 6. **Search root README.md**:
+
    ```bash
    rg "performance-guide|toast-system|testing-guide|release-process|image-preview-implementation|unified-title-bar" README.md
    ```
+
 7. **Update any found references** in root README
 
 ### Step 5: Remove Obsolete
@@ -489,23 +497,23 @@ User has already updated this file. Verify it matches final structure:
 - [ ] SVG positioning fix preserved in ui-patterns.md
 - [ ] architecture-guide.md simplified and streamlined (~450-500 lines)
 - [ ] All valuable Astro Editor content preserved:
-  - [ ] Onion pattern and getState() examples
-  - [ ] Direct Store Pattern explanation
-  - [ ] Bridge pattern (store → query)
-  - [ ] Command registry pattern
-  - [ ] All performance gotchas and warnings
+    - [ ] Onion pattern and getState() examples
+    - [ ] Direct Store Pattern explanation
+    - [ ] Bridge pattern (store → query)
+    - [ ] Command registry pattern
+    - [ ] All performance gotchas and warnings
 - [ ] All cross-references updated:
-  - [ ] docs/README.md verified (already updated by user)
-  - [ ] CLAUDE.md updated
-  - [ ] keyboard-shortcuts.md references command-system.md
-  - [ ] No references to old file names remain
+    - [ ] docs/README.md verified (already updated by user)
+    - [ ] CLAUDE.md updated
+    - [ ] keyboard-shortcuts.md references command-system.md
+    - [ ] No references to old file names remain
 - [ ] No broken internal links (verify all .md links work)
 - [ ] Git history preserved for all renamed files
 - [ ] Structure follows philosophy in docs/README.md
 - [ ] Progressive disclosure works: architecture-guide → specialized docs
 - [ ] All commands run successfully:
-  - [ ] `rg "performance-guide|toast-system|testing-guide|release-process|image-preview-implementation|unified-title-bar" docs/ --type md` returns no matches
-  - [ ] `/check` passes
+    - [ ] `rg "performance-guide|toast-system|testing-guide|release-process|image-preview-implementation|unified-title-bar" docs/ --type md` returns no matches
+    - [ ] `/check` passes
 - [ ] Final file count: 20 developer docs (up from 18, but better organized)
 
 ---

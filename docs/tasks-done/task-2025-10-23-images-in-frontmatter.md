@@ -2,7 +2,7 @@
 
 We have recently implemented floating image previews in the editor - when holding alt and hovering over any image URL or path, a preview is displayed floating in the bottom right of the editor. See `docs/developer/image-preview-implementation.md` for details on this.
 
-Astro supports images in content collections with a special `image()` helper. It is not possible to know about this from the generated JSON schemas because they show any image fields as a string (the path to the file). So we have to do this by reading `content.config.json` Similar way to how we do it for references. See here for the docs on images in content collections: https://docs.astro.build/en/guides/images/#images-in-content-collections
+Astro supports images in content collections with a special `image()` helper. It is not possible to know about this from the generated JSON schemas because they show any image fields as a string (the path to the file). So we have to do this by reading `content.config.json` Similar way to how we do it for references. See here for the docs on images in content collections: <https://docs.astro.build/en/guides/images/#images-in-content-collections>
 
 ### Requirements
 
@@ -65,6 +65,7 @@ Astro supports images in content collections with a special `image()` helper. It
    - Error handling for dialog cancellation (user clicks cancel)
 
 3. **Usage pattern**:
+
    ```tsx
    <FileUploadButton
      accept={['png', 'jpg', 'jpeg', 'gif', 'webp']}
@@ -115,10 +116,10 @@ Astro supports images in content collections with a special `image()` helper. It
 
 **Frontend Changes**:
 
-4. **Update TypeScript FieldType enum** (`src/lib/schema.ts:47-60`)
+1. **Update TypeScript FieldType enum** (`src/lib/schema.ts:47-60`)
    - Add `Image = 'image'` to the enum
 
-5. **Update `fieldTypeFromString()`** (`src/lib/schema.ts:122-138`)
+2. **Update `fieldTypeFromString()`** (`src/lib/schema.ts:122-138`)
    - Add `image: FieldType.Image` mapping
 
 **Testing Checkpoint**:
@@ -130,8 +131,8 @@ Astro supports images in content collections with a special `image()` helper. It
 - Remove console logging after verification
 - **Run Rust tests**: `cargo test` in `src-tauri/` - all existing tests should pass
 - **Add test coverage** (details TBD in Phase 5):
-  - Parser tests for `image()` detection
-  - Schema merger tests for image type enhancement
+    - Parser tests for `image()` detection
+    - Schema merger tests for image type enhancement
 
 ---
 
@@ -238,7 +239,7 @@ Astro supports images in content collections with a special `image()` helper. It
 
 **ImageField File Handling**:
 
-3. **Implement file selection handler** in `ImageField.tsx`:
+1. **Implement file selection handler** in `ImageField.tsx`:
 
    ```tsx
    const handleFileSelect = async (filePath: string) => {
@@ -294,7 +295,7 @@ Astro supports images in content collections with a special `image()` helper. It
 
    **Note**: This duplicates logic from `processDroppedFile()` - tracked as technical debt.
 
-4. **Add loading state**:
+2. **Add loading state**:
    - Show spinner/disable input during copy
    - Update preview immediately when complete
 
@@ -369,7 +370,7 @@ All features from Phase 4 have been successfully implemented in `ImageField.tsx`
 
 **Manual Path Editing**:
 
-2. **Add manual path input option**:
+1. **Add manual path input option**:
    - Small "Edit path manually" toggle/link
    - When active, show text input instead of file button
    - Allows users who already have images in place to set path
@@ -378,7 +379,7 @@ All features from Phase 4 have been successfully implemented in `ImageField.tsx`
 
 **Error Handling**:
 
-3. **Comprehensive error handling**:
+1. **Comprehensive error handling**:
    - Invalid file type → Toast error
    - File copy failure → Toast error, revert frontmatter
    - Path resolution failure → Toast error
@@ -386,7 +387,7 @@ All features from Phase 4 have been successfully implemented in `ImageField.tsx`
 
 **Loading States**:
 
-4. **Better loading UX**:
+1. **Better loading UX**:
    - Disable input during processing
    - Use `Loader2Icon` from `lucide-react` for spinner (already used in project)
    - Show spinner inline near file input
@@ -402,7 +403,7 @@ All features from Phase 4 have been successfully implemented in `ImageField.tsx`
 
 **Input Reset**:
 
-5. **File input state management**:
+1. **File input state management**:
    - Reset file input after successful copy (prevents re-triggering)
    - Clear input if user cancels selection
 
@@ -438,12 +439,12 @@ All features from Phase 4 have been successfully implemented in `ImageField.tsx`
 
 **Comprehensive Manual Testing**:
 
-3. Test all field configurations:
+1. Test all field configurations:
    - `image()` (required)
    - `image().optional()`
    - `image().default('/some/path.jpg')`
 
-4. Test edge cases:
+2. Test edge cases:
    - Empty project (no assets directory yet)
    - Collection-specific asset overrides
    - Very long filenames
@@ -452,7 +453,7 @@ All features from Phase 4 have been successfully implemented in `ImageField.tsx`
    - Switching between files in same collection
    - Switching between collections
 
-5. Test interactions:
+3. Test interactions:
    - Image field + editor drag/drop (should both work)
    - Multiple image fields in same schema
    - Nested objects containing image fields (if supported)
@@ -460,7 +461,7 @@ All features from Phase 4 have been successfully implemented in `ImageField.tsx`
 
 **Documentation**:
 
-6. Update architecture docs:
+1. Update architecture docs:
    - Add ImageField to field type documentation
    - Document image processing flow
    - Document FileUploadButton component and usage

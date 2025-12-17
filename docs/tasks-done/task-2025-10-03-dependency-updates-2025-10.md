@@ -22,6 +22,7 @@ These can be updated with minimal concern - no breaking changes expected:
 #### JavaScript/TypeScript Dependencies
 
 **Patch Updates (Same minor version):**
+
 - `@codemirror/view`: 6.38.1 → 6.38.4
 - `@hookform/resolvers`: 5.2.1 → 5.2.2
 - `@tailwindcss/vite`: 4.1.12 → 4.1.14
@@ -37,6 +38,7 @@ These can be updated with minimal concern - no breaking changes expected:
 - `lucide-react`: 0.539.0 → 0.544.0
 
 **Minor Updates (Low risk):**
+
 - `@codemirror/autocomplete`: 6.18.6 → 6.19.0
 - `@codemirror/commands`: 6.8.1 → 6.9.0
 - `@codemirror/lang-markdown`: 6.3.4 → 6.4.0
@@ -54,6 +56,7 @@ These can be updated with minimal concern - no breaking changes expected:
 - `tw-animate-css`: 1.3.7 → 1.4.0
 
 **Tauri Plugin Updates (Minor):**
+
 - `@tauri-apps/api`: 2.7.0 → 2.8.0
 - `@tauri-apps/cli`: 2.7.1 → 2.8.4
 - `@tauri-apps/plugin-dialog`: 2.3.2 → 2.4.0
@@ -61,12 +64,14 @@ These can be updated with minimal concern - no breaking changes expected:
 - `@tauri-apps/plugin-opener`: 2.4.0 → 2.5.0
 
 **React Updates:**
+
 - `react`: 19.1.1 → 19.2.0
 - `react-dom`: 19.1.1 → 19.2.0
 
 #### Rust Dependencies
 
 All Rust dependency updates appear to be compatible minor/patch updates via `cargo update`. Notable updates:
+
 - `tauri`: 2.7.0 → 2.8.5
 - `tauri-build`: 2.3.1 → 2.4.1
 - `tauri-plugin-*`: All patch/minor updates available
@@ -81,11 +86,13 @@ These updates include minor breaking changes or require configuration updates:
 **Status:** Medium risk - minor version jump, no documented breaking changes between 4.0 and 4.1
 
 **Action Required:**
+
 - Update dependency
 - Run existing tests to ensure schema parsing still works
 - Watch for any TypeScript type errors in frontmatter/schema handling
 
 **Files to Monitor:**
+
 - `src/lib/schema.ts` (main Zod usage)
 - Any components using Zod validation
 
@@ -96,6 +103,7 @@ These updates include minor breaking changes or require configuration updates:
 **Breaking Change:** Type definitions may have changed for ESLint 9
 
 **Action Required:**
+
 - Update after ESLint config is confirmed working
 - Check `eslint.config.js` for any type errors
 - May require minor config adjustments
@@ -105,17 +113,20 @@ These updates include minor breaking changes or require configuration updates:
 **Status:** Medium risk - requires config changes
 
 **Breaking Changes:**
+
 - Must update to "recommended" config (was "recommended-latest")
 - Component names must start with uppercase letter (stricter validation)
 - New rule: "component-hook-factories" (opt-in)
 - Supports ESLint 9 flat config
 
 **Action Required:**
+
 1. Update ESLint config to use "recommended" instead of "recommended-latest"
 2. Verify all component names start with uppercase
 3. Test that React hooks linting still works correctly
 
 **Files to Check:**
+
 - `eslint.config.js`
 - All component files (should already be compliant)
 
@@ -128,6 +139,7 @@ These require careful migration and testing:
 **Status:** MAJOR version update - requires Node.js 20.19+ (✅ we have 22.19.0)
 
 **Breaking Changes:**
+
 1. **Node.js Requirement:** Must use Node 20.19+ or 22.12+ (already satisfied)
 2. **Browser Target:** Default changed from 'modules' to 'baseline-widely-available'
 3. **Sass Legacy API:** Removed (not used in this project)
@@ -135,6 +147,7 @@ These require careful migration and testing:
 5. **transformIndexHtml Hook:** Changed signature (need to verify plugins don't use this)
 
 **Action Required:**
+
 1. Update Vite and @vitejs/plugin-react together
 2. Test dev server: `pnpm run dev`
 3. Test build: `pnpm run build`
@@ -143,6 +156,7 @@ These require careful migration and testing:
 6. Test HMR (Hot Module Replacement)
 
 **Files to Monitor:**
+
 - `vite.config.ts`
 - All build outputs
 - Development server behavior
@@ -152,18 +166,21 @@ These require careful migration and testing:
 **Status:** MAJOR version update - must update alongside Vite 7
 
 **Breaking Changes:**
+
 1. **Node.js Requirement:** 20.19+ or 22.12+ (already satisfied)
 2. **React Dedupe:** `react` and `react-dom` no longer auto-added to `resolve.dedupe`
 3. **Node Modules Processing:** Default exclude changed to allow processing files in node_modules
 4. **Plugin Return Type:** Changed from `PluginOption[]` to `Plugin[]`
 
 **Action Required:**
+
 1. Check if `resolve.dedupe` needs manual configuration for React
 2. Verify no issues with node_modules processing
 3. Test React Fast Refresh still works
 4. Check TypeScript types in vite.config.ts
 
 **Files to Update:**
+
 - `vite.config.ts` (may need to add resolve.dedupe config)
 
 #### 3. jsdom: 26.1.0 → 27.0.0
@@ -171,23 +188,27 @@ These require careful migration and testing:
 **Status:** MAJOR version update - used in Vitest testing
 
 **Breaking Changes:**
+
 1. **Node.js Requirement:** v20+ (already satisfied)
 2. **User Agent Stylesheet:** Now from HTML Standard (was Chromium)
 3. **Window Object:** Improved spec conformance
 4. **getComputedStyle():** Results may differ slightly
 
 **Potential Impact:**
+
 - Component tests using `getComputedStyle()` may have different results
 - Window object behavior more spec-compliant (generally good)
 - Some window.location mocking patterns may break
 
 **Action Required:**
+
 1. Update dependency
 2. Run full test suite: `pnpm run test:run`
 3. Watch for any failing tests related to DOM or window behavior
 4. Check if any tests mock window.location (may need updates)
 
 **Files to Monitor:**
+
 - All test files (especially integration tests)
 - Any tests using window/DOM APIs
 
@@ -204,6 +225,7 @@ cargo update
 ```
 
 Then run:
+
 ```bash
 pnpm run check:all
 ```
@@ -213,6 +235,7 @@ pnpm run check:all
 Update each package individually and test:
 
 1. **Zod Update**
+
    ```bash
    pnpm update zod
    pnpm run test:run
@@ -233,6 +256,7 @@ pnpm update vite @vitejs/plugin-react jsdom
 ```
 
 Then comprehensive testing:
+
 ```bash
 pnpm run typecheck
 pnpm run test:run
@@ -241,6 +265,7 @@ pnpm run tauri:check
 ```
 
 Manual testing:
+
 - Ask user to run `pnpm run dev` and verify app works
 - Test HMR by editing a component
 - Test build output
@@ -249,6 +274,7 @@ Manual testing:
 ## Rollback Plan
 
 If issues arise:
+
 1. Git status before each phase
 2. Keep phases in separate commits
 3. Can revert individual commits if needed
@@ -257,6 +283,7 @@ If issues arise:
 ## Post-Update Checklist
 
 After all updates:
+
 - [ ] Run `pnpm run check:all` successfully
 - [ ] Dev server starts and works (`pnpm run dev`)
 - [ ] Production build succeeds (`pnpm run build`)
@@ -286,6 +313,7 @@ Recommend proceeding with updates in 3 phases as outlined above. The risk is rel
 ### Phase 1: Low-Risk Updates ✅
 
 Successfully updated:
+
 - 35+ JavaScript/TypeScript patch and minor version updates
 - ~160 Rust dependency updates via `cargo update`
 - React 19.1 → 19.2 (minor update with new features, no breaking changes)
@@ -296,6 +324,7 @@ Successfully updated:
 ### Phase 2: Medium-Risk Updates ✅
 
 Successfully updated:
+
 - **Zod:** 4.0.17 → 4.1.11 (minor version, no breaking changes detected)
 - **eslint-plugin-react-hooks:** 5.2.0 → 6.1.0 (major version, ESLint 9 compatibility)
 - **@types/eslint__js:** Removed (deprecated - ESLint 9 provides own types)
@@ -305,11 +334,13 @@ Successfully updated:
 ### Phase 3: Major Updates ✅
 
 Successfully updated:
+
 - **Vite:** 6.3.5 → 7.1.8 (major version)
 - **@vitejs/plugin-react:** 4.7.0 → 5.0.4 (major version)
 - **jsdom:** 26.1.0 → 27.0.0 (major version)
 
 **Changes Required:**
+
 - Removed deprecated `@types/eslint__js` package
 - Updated `tauri:check` script (removed deprecated `--check` flag from Tauri CLI 2.8)
 
@@ -346,6 +377,7 @@ Successfully updated:
 ### Next Steps
 
 Ready for user testing:
+
 - Ask user to run `pnpm run dev` to test development server
 - Verify HMR (Hot Module Replacement) works correctly
 - Test application functionality

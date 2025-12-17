@@ -7,6 +7,7 @@
 **Remaining:** Manual testing, documentation updates, console log cleanup
 
 ### Quick Status
+
 - ✅ All 5 components fixed with `useShallow`
 - ✅ All 5 hooks stabilized
 - ✅ Quality checks passing (TypeScript, lint, Rust, tests)
@@ -23,6 +24,7 @@ The application has excessive re-renders caused by two critical Zustand subscrip
 **Impact**: Every keystroke triggers 15-20 component re-renders, wasting CPU cycles and creating potential lag on slower devices.
 
 **Root Causes**:
+
 1. **Destructuring from stores** - subscribes to entire store, causing re-renders on any state change (50% of problem)
 2. **Object reference subscriptions without `shallow` equality** - causes re-renders even when object values unchanged (40% of problem)
 3. **Subscribing to frequently-changing values** that components don't display (5% of problem)
@@ -31,6 +33,7 @@ The application has excessive re-renders caused by two critical Zustand subscrip
 ## Success Criteria
 
 After fixes:
+
 - Layout should only render when its direct dependencies change (panel visibility, settings)
 - StatusBar should only render when currentFile properties, panel visibility, or distractionFreeBarsHidden changes
 - UnifiedTitleBar should only render when its subscribed values actually change
@@ -48,6 +51,7 @@ After fixes:
 **Problem**: Three useEffect hooks depend on nested object properties from `globalSettings`. When we add `shallow` to `globalSettings`, these nested property references won't work correctly as dependencies.
 
 **Current (WILL BREAK)**:
+
 ```typescript
 const { globalSettings } = useProjectStore()
 
@@ -67,6 +71,7 @@ useEffect(() => {
 ```
 
 **Fix** (extract primitive selectors):
+
 ```typescript
 // Subscribe to specific nested values directly
 const theme = useProjectStore(state => state.globalSettings?.general?.theme)
@@ -114,6 +119,7 @@ useEffect(() => {
 **Why this is critical**: Without this fix, theme switching and heading color updates will stop working when globalSettings object reference changes.
 
 **Testing**:
+
 1. Switch theme (light/dark) → should apply correctly
 2. Change heading color in preferences → should update immediately
 3. System theme changes → heading color should update
@@ -123,6 +129,7 @@ useEffect(() => {
 ## Phase 1: Subscription Pattern Fixes (PRIMARY FIX - 90% of problem)
 
 These fixes convert destructuring to selector syntax AND add `shallow` equality for object/array subscriptions. This addresses BOTH major issues:
+
 1. Selector syntax prevents re-renders from unrelated store updates
 2. Shallow equality prevents re-renders when object references change but values don't
 
@@ -132,16 +139,19 @@ These fixes convert destructuring to selector syntax AND add `shallow` equality 
 **Lines**: 14-15
 
 **Current (CAUSES RE-RENDERS)**:
+
 ```typescript
 const { currentFile, frontmatter } = useEditorStore()
 const { projectPath, currentProjectSettings } = useProjectStore()
 ```
 
 **Problems**:
+
 1. Destructuring subscribes to entire store → re-renders on ANY editorStore/projectStore change
 2. `currentFile` and `frontmatter` are objects → re-renders even when object values unchanged
 
 **Fix with selector syntax + shallow equality** (REQUIRED):
+
 ```typescript
 import { shallow } from 'zustand/shallow'
 
@@ -152,10 +162,12 @@ const currentProjectSettings = useProjectStore(state => state.currentProjectSett
 ```
 
 **Why this works**:
+
 1. Selector syntax creates granular subscriptions → only re-renders when these specific values change
 2. `shallow` compares object properties, not references → re-renders only when actual values change
 
 **Even better** (extract primitives):
+
 ```typescript
 // Subscribe only to what you actually use
 const currentFileId = useEditorStore(state => state.currentFile?.id)
@@ -173,12 +185,14 @@ const currentFileCollection = useEditorStore(state => state.currentFile?.collect
 **Lines**: 23, 26
 
 **Current (CAUSES RE-RENDERS)**:
+
 ```typescript
 const { saveFile, isDirty, currentFile } = useEditorStore()
 const { projectPath, selectedCollection } = useProjectStore()
 ```
 
 **Fix with shallow equality**:
+
 ```typescript
 import { shallow } from 'zustand/shallow'
 
@@ -213,6 +227,7 @@ const showBars = useUIStore(state => state.showBars)
 **Lines**: 32, 42-44
 
 **Current (CAUSES RE-RENDERS)**:
+
 ```typescript
 const currentFile = useEditorStore(state => state.currentFile)
 
@@ -232,6 +247,7 @@ const showDraftsOnly =
 ```
 
 **Fix with shallow equality**:
+
 ```typescript
 import { shallow } from 'zustand/shallow'
 
@@ -261,12 +277,14 @@ const showDraftsOnly = useUIStore(
 **Lines**: 37, 39
 
 **Current**:
+
 ```typescript
 const { sidebarVisible, frontmatterPanelVisible } = useUIStore()
 const { globalSettings } = useProjectStore()
 ```
 
 **Fix** (globalSettings is an object):
+
 ```typescript
 import { shallow } from 'zustand/shallow'
 
@@ -285,6 +303,7 @@ const globalSettings = useProjectStore(state => state.globalSettings, shallow)
 **Lines**: 9, 11-14
 
 **Current**:
+
 ```typescript
 const currentFile = useEditorStore(state => state.currentFile)
 
@@ -297,6 +316,7 @@ const {
 ```
 
 **Fix**:
+
 ```typescript
 import { shallow } from 'zustand/shallow'
 
@@ -373,11 +393,13 @@ Fix hooks that have unstable return values or problematic dependencies.
 **Lines**: 15-24
 
 **Current Issues**:
+
 - Destructures from three stores (subscribes to entire stores - needs selector syntax)
 - Returns new object on every render (no memoization)
 - Complex memoization would be fragile
 
 **Current**:
+
 ```typescript
 const { currentFile, isDirty, closeCurrentFile } = useEditorStore()
 const {
@@ -392,6 +414,7 @@ const { toggleSidebar, toggleFrontmatterPanel } = useUIStore()
 ```
 
 **Fix Option A** (Add shallow for objects):
+
 ```typescript
 import { shallow } from 'zustand/shallow'
 
@@ -445,6 +468,7 @@ return useMemo(() => ({
 ```
 
 **Fix Option B - BETTER** (Extract primitives):
+
 ```typescript
 // Only subscribe to what commands actually use
 const currentFileId = useEditorStore(state => state.currentFile?.id)
@@ -471,6 +495,7 @@ return useMemo(() => ({
 **Lines**: 56
 
 **Current**:
+
 ```typescript
 const { projectPath, currentProjectSettings } = useProjectStore()
 
@@ -481,10 +506,12 @@ const { data: collections = [] } = useCollectionsQuery(
 ```
 
 **Problems**:
+
 1. Destructuring subscribes to entire projectStore
 2. If `collections` array is used in a useCallback dependency, it recreates on every query update
 
 **Fix** (Use ref to track collections):
+
 ```typescript
 const projectPath = useProjectStore(state => state.projectPath)
 const currentProjectSettings = useProjectStore(state => state.currentProjectSettings, shallow)
@@ -520,12 +547,14 @@ const createNewFile = useCallback(async () => {
 **Lines**: 17-18
 
 **Current**:
+
 ```typescript
 const { currentFile } = useEditorStore()
 const { projectPath } = useProjectStore()
 ```
 
 **Fix** (add shallow for currentFile):
+
 ```typescript
 import { shallow } from 'zustand/shallow'
 
@@ -543,11 +572,13 @@ const projectPath = useProjectStore(state => state.projectPath)
 **Line**: 16
 
 **Current**:
+
 ```typescript
 const { setDistractionFreeBarsHidden } = useUIStore()
 ```
 
 **Fix** (selector syntax for consistency):
+
 ```typescript
 const setDistractionFreeBarsHidden = useUIStore(state => state.setDistractionFreeBarsHidden)
 ```
@@ -560,6 +591,7 @@ const setDistractionFreeBarsHidden = useUIStore(state => state.setDistractionFre
 **Line**: (need to check for destructuring)
 
 **Fix** (selector syntax + shallow for objects):
+
 ```typescript
 import { shallow } from 'zustand/shallow'
 
@@ -577,6 +609,7 @@ Only add memo AFTER Phases 1-3 if profiling shows it's still needed.
 React.memo prevents re-renders when **parent** props haven't changed. After fixing store subscriptions, we may not need it.
 
 **Pattern**:
+
 ```typescript
 export const FrontmatterPanel = React.memo(() => {
   // Component with shallow subscriptions
@@ -586,11 +619,13 @@ export const FrontmatterPanel = React.memo(() => {
 ```
 
 **When to use**:
+
 - Component is expensive to render (complex DOM)
 - Component's store subscriptions are all stable (with shallow)
 - Parent re-renders frequently but props/subscriptions rarely change
 
 **When NOT to use**:
+
 - Component already has unstable subscriptions (fix those first!)
 - Component is lightweight (memo overhead not worth it)
 
@@ -625,6 +660,7 @@ console.log('[PERF] useHookName HOOK EXECUTE')
 ```
 
 **Test scenarios**:
+
 1. Type in editor → Should only see `[PERF] Editor RENDER`
 2. Toggle sidebar → Should see Layout, LeftSidebar renders
 3. Save file → Should see TitleBar render (isDirty changes)
@@ -653,6 +689,7 @@ Use React DevTools Profiler to measure before/after:
 3. **After Phase 2**: Record again if additional optimizations applied
 
 **Expected improvement**:
+
 - Before: ~15 component renders per keystroke
 - After Phase 1 (shallow): ~2-3 component renders per keystroke (90% improvement)
 - After Phase 2 (primitives): ~2 component renders per keystroke (additional 5%)
@@ -667,7 +704,6 @@ Use React DevTools Profiler to measure before/after:
 
 Add comprehensive section on Zustand subscription patterns:
 
-```markdown
 ## Zustand Subscription Patterns (CRITICAL)
 
 ### Subscription Anti-Patterns
@@ -675,6 +711,7 @@ Add comprehensive section on Zustand subscription patterns:
 Two critical performance issues with Zustand:
 
 **Two Problems**:
+
 ```typescript
 // ❌ WRONG: Destructuring subscribes to entire store
 const { currentFile } = useEditorStore()
@@ -686,6 +723,7 @@ const currentFile = useEditorStore(state => state.currentFile)
 ```
 
 **The Solution**:
+
 ```typescript
 // ✅ CORRECT: Only re-renders when object properties change
 import { shallow } from 'zustand/shallow'
@@ -693,6 +731,7 @@ const currentFile = useEditorStore(state => state.currentFile, shallow)
 ```
 
 **Even Better** (extract primitives):
+
 ```typescript
 // ✅ BEST: Subscribe only to what you display
 const fileName = useEditorStore(state => state.currentFile?.name)
@@ -704,18 +743,21 @@ const fileId = useEditorStore(state => state.currentFile?.id)
 Use this order when deciding how to subscribe:
 
 **1. First: Try primitive selectors**
+
 ```typescript
 const name = useStore(state => state.user?.name)
 const age = useStore(state => state.user?.age)
 ```
 
 **2. If objects needed: Add shallow**
+
 ```typescript
 import { shallow } from 'zustand/shallow'
 const user = useStore(state => state.user, shallow)
 ```
 
 **3. If no re-render needed: Use getState()**
+
 ```typescript
 const handler = useCallback(() => {
   const user = useStore.getState().user
@@ -724,6 +766,7 @@ const handler = useCallback(() => {
 ```
 
 **4. If parent cascading: Add React.memo**
+
 ```typescript
 export const Child = React.memo(({ userId }) => {
   const user = useStore(state => state.users[userId])
@@ -756,6 +799,7 @@ When reviewing a component with store subscriptions:
 ### Understanding Zustand Subscriptions
 
 **CRITICAL**: Destructuring subscribes to the entire store:
+
 ```typescript
 // ❌ WRONG: Subscribes to ENTIRE store - re-renders on ANY state change
 const { value1, value2 } = useStore()
@@ -766,6 +810,7 @@ const value2 = useStore(state => state.value2)
 ```
 
 **Two Problems to Fix**:
+
 1. Destructuring causes re-renders from unrelated store updates
 2. Object references without shallow cause re-renders even when values unchanged
 
@@ -804,7 +849,6 @@ const handler = useCallback(() => {
 - [ ] Callbacks use `getState()` to avoid subscriptions
 - [ ] TanStack Query arrays not used directly in useCallback/useMemo deps
 - [ ] React.memo only used after subscription optimization
-```
 
 ---
 
@@ -842,13 +886,13 @@ const handleClick = useCallback(() => {
 ```
 
 **Why**: Two problems cause excessive re-renders:
+
 1. Destructuring subscribes to entire store → re-renders on ANY change
 2. Object references change on every update → re-renders even when values unchanged
 
 A single keystroke was causing 15+ component re-renders.
 
 See `docs/developer/performance-patterns.md` for comprehensive patterns.
-```
 
 ---
 
@@ -886,13 +930,13 @@ const fileName = useEditorStore(state => state.currentFile?.name)
 **Impact**: Without these patterns, every keystroke triggered 15+ component re-renders (Layout, StatusBar, TitleBar, FrontmatterPanel, and all children).
 
 **Subscription Escalation**:
+
 1. Try primitive selectors first
 2. If objects needed, add `shallow`
 3. If no re-render needed, use `getState()`
 4. If parent cascading, add React.memo
 
 See `docs/developer/performance-patterns.md` for complete patterns.
-```
 
 ---
 
@@ -928,6 +972,7 @@ const currentFile = useEditorStore(state => state.currentFile)
 ```
 
 **What happens**:
+
 1. User types → `editorContent` changes in store
 2. Zustand creates new store state object
 3. Problem 1: Components with destructuring re-render (entire store subscription)
@@ -944,6 +989,7 @@ const currentFile = useEditorStore(state => state.currentFile, shallow)
 ```
 
 **How it works**:
+
 1. Selector syntax creates granular subscription → only re-renders when currentFile changes
 2. `shallow` compares object properties, not references → re-renders only when actual values change
 
@@ -958,10 +1004,12 @@ const fileId = useEditorStore(state => state.currentFile?.id)
 ## Migration Results
 
 **Files Fixed**: 10
+
 - 5 components (Layout, UnifiedTitleBar, StatusBar, FrontmatterPanel, LeftSidebar)
 - 5 custom hooks (useCommandContext, useCreateFile, useEditorFileContent, useCommandPalette, useEffectiveSettings)
 
 **Performance Improvement**:
+
 - Before: ~15 re-renders per keystroke
 - After: ~2 re-renders per keystroke
 - Reduction: ~87% fewer wasted CPU cycles
@@ -981,12 +1029,14 @@ const fileId = useEditorStore(state => state.currentFile?.id)
 ### When to Use Each Pattern
 
 **1. Primitive values**: Use directly
+
 ```typescript
 const isDirty = useStore(state => state.isDirty)
 const count = useStore(state => state.count)
 ```
 
 **2. Objects/Arrays**: Add shallow
+
 ```typescript
 import { shallow } from 'zustand/shallow'
 const user = useStore(state => state.user, shallow)
@@ -994,6 +1044,7 @@ const items = useStore(state => state.items, shallow)
 ```
 
 **3. Callbacks**: Use getState()
+
 ```typescript
 const handler = useCallback(() => {
   const user = useStore.getState().user
@@ -1002,6 +1053,7 @@ const handler = useCallback(() => {
 ```
 
 **4. TanStack Query arrays**: Use ref pattern
+
 ```typescript
 const { data: items = [] } = useQuery(...)
 const itemsRef = useRef(items)
@@ -1025,11 +1077,10 @@ Add these checks to all PR reviews:
 
 ## References
 
-- Performance issue document: `docs/developer/performance-issue-excessive-rerenders.md`
-- Performance patterns: `docs/developer/performance-patterns.md`
-- Zustand shallow docs: https://docs.pmnd.rs/zustand/guides/prevent-rerenders-with-use-shallow
-- React render optimization: https://react.dev/learn/render-and-commit
-```
+- [Performance issue document](../developer/performance-issue-excessive-rerenders.md)
+- [Performance patterns](../developer/performance-patterns.md)
+- [Zustand shallow docs](https://docs.pmnd.rs/zustand/guides/prevent-rerenders-with-use-shallow)
+- [React render optimization](https://react.dev/learn/render-and-commit)
 
 ---
 
@@ -1038,22 +1089,22 @@ Add these checks to all PR reviews:
 ### ✅ Completed Implementation (2025-11-07)
 
 - [x] **Phase 0 (Pre-implementation fixes) completed**
-  - Layout.tsx useEffect dependencies fixed with primitive selectors for theme/headingColor
+    - Layout.tsx useEffect dependencies fixed with primitive selectors for theme/headingColor
 - [x] **Phase 1 (Object reference fixes with `useShallow`) implemented**
-  - FrontmatterPanel.tsx: `useShallow` for currentFile, frontmatter, currentProjectSettings
-  - UnifiedTitleBar.tsx: `useShallow` for currentFile
-  - LeftSidebar.tsx: `useShallow` for currentFile, currentProjectSettings, draftFilter
-  - Layout.tsx: `useShallow` for headingColor (Phase 0)
-  - StatusBar.tsx: `useShallow` for currentFile
+    - FrontmatterPanel.tsx: `useShallow` for currentFile, frontmatter, currentProjectSettings
+    - UnifiedTitleBar.tsx: `useShallow` for currentFile
+    - LeftSidebar.tsx: `useShallow` for currentFile, currentProjectSettings, draftFilter
+    - Layout.tsx: `useShallow` for headingColor (Phase 0)
+    - StatusBar.tsx: `useShallow` for currentFile
 - [x] **Phase 2 (Primitive selectors) applied where beneficial**
-  - Layout.tsx: Extracted `theme` as primitive selector
-  - All components converted to selector syntax (no destructuring)
+    - Layout.tsx: Extracted `theme` as primitive selector
+    - All components converted to selector syntax (no destructuring)
 - [x] **Phase 3 (Hook stabilization) completed**
-  - useCommandContext.ts: `useShallow` for objects
-  - useCreateFile.ts: `useShallow` + ref pattern for collections array
-  - useEditorFileContent.ts: `useShallow` for currentFile
-  - useCommandPalette.ts: selector syntax
-  - useEffectiveSettings.ts: `useShallow` for currentProjectSettings
+    - useCommandContext.ts: `useShallow` for objects
+    - useCreateFile.ts: `useShallow` + ref pattern for collections array
+    - useEditorFileContent.ts: `useShallow` for currentFile
+    - useCommandPalette.ts: selector syntax
+    - useEffectiveSettings.ts: `useShallow` for currentProjectSettings
 - [x] **Phase 4 (React.memo) evaluated** - Not needed after Phases 1-3
 - [x] **`pnpm run check:all` passes** - All TypeScript, lint, format, Rust, and tests passing
 - [x] **Console logging added** (with eslint-disable for manual testing)
@@ -1068,10 +1119,10 @@ Add these checks to all PR reviews:
   5. Switch theme → verify theme applies correctly (validates Phase 0 fix)
   6. Create new file (Cmd+N) → should work smoothly
 - [ ] **Documentation Updates** (Phase 7):
-  - [ ] Update `docs/developer/performance-patterns.md` with `useShallow` patterns
-  - [ ] Update `CLAUDE.md` with critical subscription warnings
-  - [ ] Update `docs/developer/architecture-guide.md` with subscription patterns
-  - [ ] Create `docs/developer/zustand-subscription-migration.md`
+    - [ ] Update `docs/developer/performance-patterns.md` with `useShallow` patterns
+    - [ ] Update `CLAUDE.md` with critical subscription warnings
+    - [ ] Update `docs/developer/architecture-guide.md` with subscription patterns
+    - [ ] Create `docs/developer/zustand-subscription-migration.md`
 - [ ] **Clean up console logs** - Remove all `[PERF]` console.log statements before merge
 
 ### 📊 Expected Results
@@ -1128,7 +1179,8 @@ These are NOT equivalent. This is fundamental to Zustand's API design.
 ### Render Cascade Analysis
 
 **Before Fixes** (per keystroke):
-```
+
+```plaintext
 User types
   └─> editorContent changes
       └─> FrontmatterPanel re-renders (currentFile reference changed)
@@ -1142,7 +1194,8 @@ Total: ~15 component re-renders
 ```
 
 **After Fixes** (per keystroke):
-```
+
+```plaintext
 User types
   └─> editorContent changes
       └─> Editor re-renders (expected)
@@ -1154,6 +1207,7 @@ Total: ~2 component re-renders (Editor + maybe one subscriber)
 ### Store Structure Assessment
 
 **Current Stores** (all well-designed):
+
 - `editorStore` (36 properties) - ✅ Well-decomposed
 - `projectStore` (18 properties) - ✅ Well-decomposed
 - `uiStore` (13 properties) - ✅ Well-decomposed
@@ -1179,21 +1233,24 @@ All files converted from destructuring to selector syntax + added `shallow` for 
 ### Performance Impact
 
 **CPU Impact** (per keystroke):
+
 - Before: ~15 component render cycles + reconciliation = ~45ms on avg hardware
 - After: ~2 component render cycles + reconciliation = ~6ms on avg hardware
 - **Reduction: ~87% fewer wasted CPU cycles**
 
 **User Experience**:
+
 - Before: Noticeable input lag on slower devices (100+ ms delays possible)
 - After: Smooth, responsive typing even on older MacBooks
 
 **Developer Experience**:
+
 - Before: Difficult to debug render cascades, unclear why components re-render
 - After: Clear, predictable render behavior tied to actual state changes
 
 ### References
 
-- Original performance issue doc: `docs/developer/performance-issue-excessive-rerenders.md`
-- Zustand shallow guide: https://docs.pmnd.rs/zustand/guides/prevent-rerenders-with-use-shallow
-- React render optimization: https://react.dev/learn/render-and-commit
-- TanStack Query render optimizations: https://tanstack.com/query/latest/docs/framework/react/guides/render-optimizations
+- [Original performance issue doc](../developer/performance-issue-excessive-rerenders.md)
+- [Zustand shallow guide](https://docs.pmnd.rs/zustand/guides/prevent-rerenders-with-use-shallow)
+- [React render optimization](https://react.dev/learn/render-and-commit)
+- [TanStack Query render optimizations](https://tanstack.com/query/latest/docs/framework/react/guides/render-optimizations)

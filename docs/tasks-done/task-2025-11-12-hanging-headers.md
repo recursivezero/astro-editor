@@ -1,6 +1,6 @@
 # Task: Hanging Headers (iA Writer Style)
 
-https://github.com/dannysmith/astro-editor/issues/3
+<https://github.com/dannysmith/astro-editor/issues/3>
 
 ## Feature Overview
 

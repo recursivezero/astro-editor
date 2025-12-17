@@ -1,6 +1,6 @@
 # Task: Astro Editor Website & Docs Site
 
-https://github.com/dannysmith/astro-editor/issues/6
+<https://github.com/dannysmith/astro-editor/issues/6>
 
 Create a simple, effective website for Astro Editor that serves as the primary marketing and documentation hub, hosted using GitHub Pages with automated deployment.
 
@@ -10,7 +10,7 @@ Build a minimal but professional website that showcases Astro Editor's features,
 
 ## Inspiration
 
-https://getdarkmatter.dev/
+<https://getdarkmatter.dev/>
 
 ## Architecture Requirements
 

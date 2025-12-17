@@ -1,6 +1,6 @@
 # Task: Cross-Platform Preparation (Part A)
 
-**Issue:** https://github.com/dannysmith/astro-editor/issues/56
+**Issue:** <https://github.com/dannysmith/astro-editor/issues/56>
 
 ## Overview
 
@@ -490,7 +490,7 @@ How to Test
    - .AppImage for Linux
    - latest.json for auto-updater (all platforms)
 
-- 5. Clean up - delete the test release and tag after verification
+- 1. Clean up - delete the test release and tag after verification
 
 ---
 

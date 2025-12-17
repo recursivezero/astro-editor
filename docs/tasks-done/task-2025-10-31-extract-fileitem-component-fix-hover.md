@@ -3,6 +3,7 @@
 ## Problem
 
 Draft files in the left sidebar don't show hover effect. The issue is:
+
 1. Conflicting hover classes: `hover:bg-accent` (always applied) vs `hover:bg-[var(--color-warning-bg)]/80` (draft items)
 2. Tailwind opacity modifier `/80` doesn't work with CSS custom properties that are already complete `hsl()` values
 3. 60+ lines of inline JSX in `.map()` making the code hard to maintain
@@ -14,11 +15,13 @@ Extract file button into a `FileItem` component and use CSS brightness filters f
 ## Architecture Compliance
 
 **Extraction Criteria** (from architecture-guide.md):
+
 - ✅ 50+ lines of related logic (60+ lines currently)
 - ✅ Contains multiple concerns (rendering, rename logic, state management)
 - ✅ Testable in isolation
 
 **Performance Considerations**:
+
 - FileItem is a **pure presentational component** - NO store subscriptions
 - Parent subscribes ONCE and passes `isSelected` and `frontmatterMappings` as props
 - Avoids N subscriptions (one per file) which would be a performance regression
@@ -26,6 +29,7 @@ Extract file button into a `FileItem` component and use CSS brightness filters f
 - CSS-only hover (brightness filter) - no JS state needed
 
 **Future Optimization** (if performance testing reveals issues):
+
 - Handlers passed to FileItem could be wrapped in `useCallback` with `getState()` pattern
 - FileItem could be wrapped in `React.memo` to prevent unnecessary re-renders
 - Current implementation maintains existing behavior (no regression)
@@ -37,6 +41,7 @@ Extract file button into a `FileItem` component and use CSS brightness filters f
 **Location**: `src/components/layout/FileItem.tsx`
 
 **Props Interface**:
+
 ```typescript
 interface FileItemProps {
   file: FileEntry
@@ -52,6 +57,7 @@ interface FileItemProps {
 ```
 
 **Internal State**:
+
 - `renameValue` (local useState) - the edited filename
 - `renameInitializedRef` (local useRef) - tracks if focus/select logic has run
 - Derived: `isFileDraft`, `isMdx`, `title`, `publishedDate`
@@ -61,12 +67,14 @@ interface FileItemProps {
 ### 2. Update LeftSidebar
 
 **Keep in parent**:
+
 - `renamingFileId` state (which file is being renamed)
 - `handleRename` (sets renamingFileId)
 - `handleRenameSubmit` (calls mutation, clears renamingFileId)
 - `handleRenameCancel` (clears renamingFileId)
 
 **Compute in parent and pass to FileItem**:
+
 - `isSelected={currentFile?.id === file.id}`
 - `frontmatterMappings` from `useEffectiveSettings(selectedCollection)`
 - `isRenaming={renamingFileId === file.id}`
@@ -75,6 +83,7 @@ interface FileItemProps {
 ### 3. Fix Hover with CSS Brightness
 
 **Replace**:
+
 ```tsx
 className={cn(
   'hover:bg-accent',  // Always applied - CONFLICT
@@ -84,6 +93,7 @@ className={cn(
 ```
 
 **With (mutually exclusive conditions)**:
+
 ```tsx
 className={cn(
   'w-full text-left p-3 rounded-md transition-colors',
@@ -98,6 +108,7 @@ className={cn(
 ```
 
 **Why this works**:
+
 - **Mutually exclusive conditions** prevent filter/color conflicts
 - Selected items: Always get primary colors (no brightness filter interference)
 - Draft items: Get warning background + brightness filter hover
@@ -185,6 +196,7 @@ export const FileItem: React.FC<FileItemProps> = ({
 ### 5. Helper Functions
 
 Helper functions (`getTitle`, `formatDate`, `getPublishedDate`) are **exported from FileItem.tsx** so they can be:
+
 - Used by FileItem internally
 - Imported by LeftSidebar if needed for other purposes
 - Tested independently
@@ -212,6 +224,7 @@ Helper functions (`getTitle`, `formatDate`, `getPublishedDate`) are **exported f
 ## Testing
 
 After implementation:
+
 - [ ] Test hover on non-draft files (should use `hover:bg-accent`)
 - [ ] Test hover on draft files (should darken in light mode, lighten in dark mode)
 - [ ] Test hover on selected draft files (should use primary colors)

@@ -20,7 +20,7 @@ The most critical part of this feature is reliably extracting the necessary info
 
 #### 2.1. Implementation Plan (Rust)
 
-1.  **Create a New Tauri Command:**
+1. **Create a New Tauri Command:**
     Define a new command in `src-tauri/src/main.rs`:
 
     ```rust
@@ -30,7 +30,7 @@ The most critical part of this feature is reliably extracting the necessary info
     }
     ```
 
-2.  **Define the Data Structure:**
+2. **Define the Data Structure:**
     Create a Rust struct that will be serialized and sent to the frontend. This should live in a new `src-tauri/src/models/mdx_component.rs` file.
 
     ```rust
@@ -52,7 +52,7 @@ The most critical part of this feature is reliably extracting the necessary info
     }
     ```
 
-3.  **Implement the Parser Logic:**
+3. **Implement the Parser Logic:**
     The command will scan the `[project_path]/src/components/mdx/` directory for `.astro` files. For each file, it will perform the following steps:
 
     a. **Read the File:** Read the file content into a string.
@@ -92,14 +92,14 @@ The updated approach will:
 
 The revised data flow is centered around the Component Builder dialog:
 
-1.  **Project Load:** A TanStack Query hook (`useMdxComponentsQuery`) calls the `scan_mdx_components` Tauri command. Rust parses all relevant `.astro` files and returns a structured list of component data.
-2.  **Cache Component Data:** TanStack Query caches the component data, making it available throughout the app.
-3.  **Trigger:** The user, while focused on the editor, presses the keyboard shortcut (`Cmd+/`).
-4.  **Launch Dialog:** The shortcut (using react-hotkeys-hook) opens the `ComponentBuilderDialog` with access to the current editor view.
-5.  **Select Component:** The user is presented with a searchable list of available components (e.g., `Callout`, `Figure`). They select one.
-6.  **Configure Props:** The dialog transitions to a new view where the user can see all the props for the selected component. They can toggle optional props on or off using switches.
-7.  **Build & Insert Snippet:** Upon confirming, a utility function generates a CodeMirror-compatible snippet string with placeholders (e.g., `<Callout title="\${1}">\${2}</Callout>`).
-8.  **Dispatch to Editor:** A CodeMirror command is dispatched, inserting the snippet at the user's cursor position and activating snippet-mode, allowing the user to `Tab` between the placeholders.
+1. **Project Load:** A TanStack Query hook (`useMdxComponentsQuery`) calls the `scan_mdx_components` Tauri command. Rust parses all relevant `.astro` files and returns a structured list of component data.
+2. **Cache Component Data:** TanStack Query caches the component data, making it available throughout the app.
+3. **Trigger:** The user, while focused on the editor, presses the keyboard shortcut (`Cmd+/`).
+4. **Launch Dialog:** The shortcut (using react-hotkeys-hook) opens the `ComponentBuilderDialog` with access to the current editor view.
+5. **Select Component:** The user is presented with a searchable list of available components (e.g., `Callout`, `Figure`). They select one.
+6. **Configure Props:** The dialog transitions to a new view where the user can see all the props for the selected component. They can toggle optional props on or off using switches.
+7. **Build & Insert Snippet:** Upon confirming, a utility function generates a CodeMirror-compatible snippet string with placeholders (e.g., `<Callout title="\${1}">\${2}</Callout>`).
+8. **Dispatch to Editor:** A CodeMirror command is dispatched, inserting the snippet at the user's cursor position and activating snippet-mode, allowing the user to `Tab` between the placeholders.
 
 ---
 
@@ -210,7 +210,7 @@ This component orchestrates the entire UI using `shadcn/ui`.
 
 **Key Implementation Points:**
 
-1.  **Global Shortcut:** In `src/components/Layout/Layout.tsx`, add the new hotkey following the existing pattern.
+1. **Global Shortcut:** In `src/components/Layout/Layout.tsx`, add the new hotkey following the existing pattern.
 
     ```tsx
     useHotkeys(
@@ -225,16 +225,16 @@ This component orchestrates the entire UI using `shadcn/ui`.
     )
     ```
 
-2.  **Dialog Structure:**
+2. **Dialog Structure:**
     - Use `CommandDialog` from `shadcn/ui`. Its `open` and `onOpenChange` props will be bound to `store.isOpen` and `store.close`.
-    - A conditional render based on `store.step` will show either the component list or the props configurator.
+    - A conditional render based on `store.step` will show either the component list or the props configuration.
 
-3.  **Component List (`step === 'list'`):**
+3. **Component List (`step === 'list'`):**
     - Render `Command.Input`, `Command.List`, etc.
     - Map over components from `useMdxComponentsQuery` to create `Command.Item` elements.
     - `onSelect` for each item should call `store.selectComponent(component)`.
 
-4.  **Props Configurator (`step === 'configure'`):**
+4. **Props Configurator (`step === 'configure'`):**
     - This view takes over the dialog content when `step` changes.
     - **Layout:** Use a `Card` component for structure.
     - **Header:** `CardHeader` should contain the `Card.Title` (e.g., "Configure `<Callout />`") and a `Button` (variant="ghost") for "Back", which calls `store.back()`.
@@ -251,7 +251,7 @@ This component orchestrates the entire UI using `shadcn/ui`.
 
 This part connects the UI to the CodeMirror editor.
 
-1.  **Snippet Builder (`snippet-builder.ts`):**
+1. **Snippet Builder (`snippet-builder.ts`):**
     - Create a pure function to maximize testability and separation of concerns.
 
     **File:** `src/lib/editor/snippet-builder.ts`
@@ -276,7 +276,7 @@ This part connects the UI to the CodeMirror editor.
     }
     ```
 
-2.  **Editor Command (`commands.ts`):**
+2. **Editor Command (`commands.ts`):**
     - This function will execute the CodeMirror transaction. Note the corrected import path for `snippet`.
 
     **File:** `src/lib/editor/commands.ts`
@@ -305,9 +305,9 @@ This refined plan provides a clear, step-by-step guide that is technically accur
 
 There is a simple reference implementation in the `DebugScreen.tsx` which works perfectly and is very simple. All the logic for the entire editor is within that file. Subtasks:
 
-- [x] Refactor Codemirror (without affecting functionality) to stop using basicSetup and replace it with only the nececarry extensions
-- [x] Simplify any other code in `src/lib/editor` and `src/hooks/editor` and `EditorView.tsx` so it is as simple as possible and easy to reason about and read. Remove any unnececarry code related to Failed attempts at snippet insertion and tag completion.
-- [x] Actially implement the snippet insertion from the `/src/components/ComponentBuilder/ComponentBuilderDialog.tsx` system pallete, based on the pattern in the DebugScreen.
+- [x] Refactor Codemirror (without affecting functionality) to stop using basicSetup and replace it with only the necessary extensions
+- [x] Simplify any other code in `src/lib/editor` and `src/hooks/editor` and `EditorView.tsx` so it is as simple as possible and easy to reason about and read. Remove any unnecessary code related to Failed attempts at snippet insertion and tag completion.
+- [x] Actually implement the snippet insertion from the `/src/components/ComponentBuilder/ComponentBuilderDialog.tsx` system palette, based on the pattern in the DebugScreen.
 - [x] Double-check the code for anything else which can be simplified or removed once this is working.
 
 You are to go through these step-by-step.

@@ -22,10 +22,10 @@ Because of this, it's common for folks to **write** in tools like iA Writer or O
 Steps 1-3 are very much _writer mode_ tasks, while 4 & 5 are definitely _coder mode_ tasks. Astro Editor is only concerned with the former, which means:
 
 - Code blocks are not syntax highlighted. If you have code examples in your files you're better off authoring them in a coding tool which can properly lint, format and check your code examples.
-- There's no mechanism for comitting or publishing in Astro Editor. You should do that in a code editor or terminal.
+- There's no mechanism for committing or publishing in Astro Editor. You should do that in a code editor or terminal.
 - There's no way to preview your writing. The best way to do that is by running your astro site locally with `pnpm run dev` and looking at it there.
 
-Because the goal of this **simplicity when in writer mode**, Astro Editor is intentionally opinionated about its UI and limits the user customisation features to _"making it work with your Astro project and no more"_. It's not possible to customise the colour schemes, typeface etc. If you need fine-grained customization & extensibility we recommend using a custom profile in VSCode (or Obsidian) which you've set up for Markdown editing.
+Because the goal of this **simplicity when in writer mode**, Astro Editor is intentionally opinionated about its UI and limits the user customization features to _"making it work with your Astro project and no more"_. It's not possible to customize the colour schemes, typeface etc. If you need fine-grained customization & extensibility we recommend using a custom profile in VSCode (or Obsidian) which you've set up for Markdown editing.
 
 ### Astro Requirements
 
@@ -42,7 +42,7 @@ Some features require you to have certain properties in your schema. A date fiel
 
 By default, Astro Editor expects the following structure in your Astro project:
 
-```
+```plaintext
 my-astro-site
 └── src
     ├── assets
@@ -340,7 +340,7 @@ To navigate into a subdirectory, simply click on it. The sidebar header shows br
 
 **Breadcrumb Navigation**: When you're inside a subdirectory, the header shows a breadcrumb trail. Click any segment to jump to that level:
 
-```
+```plaintext
 Articles / 2024 / January
 ```
 

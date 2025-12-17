@@ -132,10 +132,13 @@ See `docs/developer/preferences-system.md` for detailed information.
 **Current Problem:**
 
 - **src-tauri/src/parser.rs:89** - Hard-codes `src/content`:
+
   ```rust
   let content_dir = project_path.join("src").join("content");
   ```
+
 - **src-tauri/src/commands/project.rs:270-275** - Correctly respects override:
+
   ```rust
   let content_dir = if let Some(override_path) = &content_directory_override {
       project_path.join(override_path)
@@ -376,7 +379,7 @@ After a few versions (e.g., v2.5.0), when most users have upgraded:
 
 **Fallback Chain:**
 
-```
+```txt
 Collection-specific setting
   ↓ (if not set)
 Project-level setting
@@ -387,13 +390,13 @@ Hard-coded default (in code, not in global settings)
 **Collection Settings Schema:**
 
 - `frontmatterMappings` (object, optional)
-  - `publishedDate` (string | string[], optional)
-  - `title` (string, optional)
-  - `description` (string, optional)
-  - `draft` (string, optional)
+    - `publishedDate` (string | string[], optional)
+    - `title` (string, optional)
+    - `description` (string, optional)
+    - `draft` (string, optional)
 - `pathOverrides` (object, optional)
-  - `contentDirectory` (string, optional) - Collection-specific content path
-  - `assetsDirectory` (string, optional) - Collection-specific assets path
+    - `contentDirectory` (string, optional) - Collection-specific content path
+    - `assetsDirectory` (string, optional) - Collection-specific assets path
 
 **Use Cases This Enables:**
 
@@ -730,13 +733,13 @@ If user changes collection path settings while file is open:
    - Only show project/collection sections when project is open
    - Visual distinction (icons, colors, borders) between scopes
 
-**Global Settings - IDE Command:**
+    **Global Settings - IDE Command:**
 
-- **SECURITY CRITICAL:** Dropdown only, no free-form text input
-- Options: (empty/unset), "cursor", "code", "vim"
-- These commands are whitelisted in Rust and execute in terminal
-- Cannot allow arbitrary user input for security reasons
-- Default: Empty/unset (user must explicitly choose)
+    - **SECURITY CRITICAL:** Dropdown only, no free-form text input
+    - Options: (empty/unset), "cursor", "code", "vim"
+    - These commands are whitelisted in Rust and execute in terminal
+    - Cannot allow arbitrary user input for security reasons
+    - Default: Empty/unset (user must explicitly choose)
 
 2. **Collection Settings UI:**
    - Add new "Collections" tab or section in project settings
@@ -760,7 +763,7 @@ If user changes collection path settings while file is open:
 
 **Component Structure:**
 
-```
+```text
 PreferencesDialog
 ├── GlobalSettingsPane (general, appearance)
 ├── ProjectSettingsPane (path overrides, frontmatter mappings)
@@ -807,15 +810,18 @@ PreferencesDialog
 **Critical Bugs Fixed:**
 
 **Root Cause:** The `ProjectRegistryManager` class had two bugs:
+
 1. `updateProjectSettings()` method only saved 3 fields (pathOverrides, frontmatterMappings, collectionViewSettings) and completely ignored the `collections` field
 2. `getEffectiveSettings()` method only returned 3 fields and didn't include the `collections` array
 
 **Fix Applied:** (`src/lib/project-registry/index.ts`)
+
 1. Updated `updateProjectSettings()` to handle the `collections` field when provided
 2. Updated `getEffectiveSettings()` to return the `collections` array (defaults to empty array)
 3. Updated test expectation in `src/test/project-registry.test.ts` to expect the `collections` field
 
 **Verification:**
+
 - User confirmed collection settings inputs and dropdowns now work correctly
 - All TypeScript, Rust, and lint checks pass
 - All 431 tests pass (including the updated test for collections field)
@@ -847,7 +853,7 @@ PreferencesDialog
 
 3. **Warning Copy:**
 
-   ```
+   ```text
    ⚠️ Warning: This will permanently delete:
    - All global preferences
    - All project-specific settings

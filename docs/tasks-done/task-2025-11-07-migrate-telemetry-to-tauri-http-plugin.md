@@ -24,6 +24,7 @@ In production, the app runs from `tauri://localhost`, which has different securi
 Move telemetry entirely to Rust. Since the updater already runs in Rust (`lib.rs:60`), we can send telemetry from the same place on app startup.
 
 **Advantages:**
+
 - No JavaScript dependency
 - Simpler architecture (one language)
 - Smaller frontend bundle
@@ -153,6 +154,7 @@ fn get_or_create_uuid(app_data_dir: &PathBuf) -> Result<String, Box<dyn std::err
 ```
 
 **Key Points:**
+
 - Uses exact same JSON structure as current implementation: `{"uuid": "...", "created_at": "..."}`
 - Uses exact same payload structure expected by Cloudflare Worker
 - Uses exact same 5-second timeout as JavaScript version
@@ -170,6 +172,7 @@ mod telemetry;
 ```
 
 So it should look like:
+
 ```rust
 mod commands;
 mod models;
@@ -181,6 +184,7 @@ mod telemetry;  // Add this line
 **3b) Add telemetry call in setup** (inside the `.setup(|app| {` block, after the logging lines around line 81):
 
 Find this section:
+
 ```rust
 .setup(|app| {
     // Log app startup information
@@ -204,6 +208,7 @@ After the logging lines (around line 81), add:
 ```
 
 **Why this approach:**
+
 - Uses `async_runtime::spawn` to avoid blocking app startup
 - Fails silently with `let _ =` (telemetry should never crash the app)
 - Runs immediately on app startup, same timing as before
@@ -223,17 +228,20 @@ rm -f src/lib/telemetry.test.ts
 **File:** `src/App.tsx`
 
 Remove line 10:
+
 ```typescript
 import { sendTelemetryEvent } from './lib/telemetry'  // DELETE THIS LINE
 ```
 
 Remove lines 17-18 (inside the `checkForUpdates` function):
+
 ```typescript
 const version = await getVersion()           // DELETE THIS LINE
 sendTelemetryEvent(version).catch(() => {})  // DELETE THIS LINE
 ```
 
 **Before:**
+
 ```typescript
 const checkForUpdates = async (): Promise<boolean> => {
   try {
@@ -244,6 +252,7 @@ const checkForUpdates = async (): Promise<boolean> => {
 ```
 
 **After:**
+
 ```typescript
 const checkForUpdates = async (): Promise<boolean> => {
   try {
@@ -251,6 +260,7 @@ const checkForUpdates = async (): Promise<boolean> => {
 ```
 
 **Also remove the unused import at line 8:**
+
 ```typescript
 import { getVersion } from '@tauri-apps/api/app'  // DELETE THIS (no longer used)
 ```
@@ -275,6 +285,7 @@ pnpm run tauri dev
 ```
 
 **Expected behavior:**
+
 - ✅ App starts without errors
 - ✅ No CORS errors in browser console
 - ✅ No telemetry errors in Rust logs
@@ -283,6 +294,7 @@ pnpm run tauri dev
 **5c) Verify telemetry was sent:**
 
 Check the database for new events:
+
 ```bash
 cd telemetry-worker
 pnpm wrangler d1 execute astro-telemetry --remote --command "
@@ -294,6 +306,7 @@ pnpm wrangler d1 execute astro-telemetry --remote --command "
 ```
 
 You should see a new row with:
+
 - Your UUID (same as in `~/Library/Application Support/is.danny.astroeditor/telemetry.json`)
 - Current app version (from `tauri.conf.json`)
 - Event: `update_check`
@@ -308,6 +321,7 @@ cat ~/Library/Application\ Support/is.danny.astroeditor/telemetry.json
 ```
 
 Should output:
+
 ```json
 {
   "uuid": "some-uuid-here",
@@ -322,6 +336,7 @@ pnpm run tauri build
 ```
 
 Install the built app from `src-tauri/target/release/bundle/macos/Astro Editor.app` and verify:
+
 - App launches successfully
 - Same UUID is used (persistent across dev/prod)
 - Telemetry event appears in database
@@ -331,6 +346,7 @@ Install the built app from `src-tauri/target/release/bundle/macos/Astro Editor.a
 After implementation, verify all these conditions:
 
 ### Functionality
+
 - [ ] App starts in development mode without errors
 - [ ] App starts in production mode without errors
 - [ ] No CORS errors in browser console (dev mode)
@@ -339,18 +355,21 @@ After implementation, verify all these conditions:
 - [ ] Payload structure matches Cloudflare Worker expectations
 
 ### UUID Persistence
+
 - [ ] `telemetry.json` file created on first launch if missing
 - [ ] Same UUID used across app restarts
 - [ ] Same UUID used in both dev and prod builds
 - [ ] File format matches: `{"uuid": "...", "created_at": "..."}`
 
 ### Error Handling
+
 - [ ] App doesn't crash if network is unavailable
 - [ ] App doesn't crash if file write fails
 - [ ] App doesn't crash if server is down
 - [ ] No visible errors to the user in any failure case
 
 ### Code Quality
+
 - [ ] All TypeScript telemetry files deleted (`telemetry.ts`, `telemetry.test.ts`)
 - [ ] All telemetry imports removed from `App.tsx`
 - [ ] No unused imports remaining
@@ -372,6 +391,7 @@ rm src-tauri/src/telemetry.rs
 ```
 
 Then run:
+
 ```bash
 pnpm run tauri dev
 ```
@@ -396,19 +416,24 @@ This matches the Cloudflare Worker's expected format (`telemetry-worker/worker.j
 ## Common Issues & Solutions
 
 ### Issue: `reqwest` not found during compilation
+
 **Solution:** Run `cargo fetch` in the `src-tauri` directory first.
 
 ### Issue: Telemetry not appearing in database
+
 **Debug steps:**
+
 1. Check Rust logs for errors: `tauri dev` output
 2. Verify network connectivity: `curl https://updateserver.dny.li/event`
 3. Check database: Run the D1 query in Step 5c
 4. Verify UUID file exists: `cat ~/Library/Application\ Support/is.danny.astroeditor/telemetry.json`
 
 ### Issue: App data directory doesn't exist
+
 **Expected behavior:** The Rust code creates it automatically. If it fails, check file permissions.
 
 ### Issue: UUID changes between launches
+
 **Cause:** File read/write issue. Check that `telemetry.json` exists and is readable.
 
 ## Why This Approach Works
@@ -425,5 +450,5 @@ This matches the Cloudflare Worker's expected format (`telemetry-worker/worker.j
 - Current Implementation: `src/lib/telemetry.ts` (to be deleted)
 - Telemetry Worker: `telemetry-worker/worker.js`
 - App Data File Pattern: `src-tauri/src/commands/files.rs:848-888`
-- Reqwest Docs: https://docs.rs/reqwest/latest/reqwest/
-- UUID Crate Docs: https://docs.rs/uuid/latest/uuid/
+- Reqwest Docs: <https://docs.rs/reqwest/latest/reqwest/>
+- UUID Crate Docs: <https://docs.rs/uuid/latest/uuid/>

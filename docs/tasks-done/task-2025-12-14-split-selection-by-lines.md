@@ -7,10 +7,12 @@ Add a keyboard shortcut (`Cmd+Shift+L`) that converts a multi-line selection int
 ## Behavior
 
 When the user:
+
 1. Selects multiple lines of text
 2. Presses `Cmd+Shift+L`
 
 The editor will:
+
 - Place a cursor at the end of each line within the selection
 - Include empty lines (they get a cursor too)
 - Allow simultaneous editing across all lines
@@ -164,10 +166,10 @@ export interface EditorCommandRegistry {
 
 ### Edge case testing
 
-7. Cursor only (no selection) - should do nothing
-8. Single line selection - should do nothing
-9. Select "Line 1\n" by double-clicking Line 1 then Shift+Down - verify Line 2 doesn't get a cursor
-10. Select backwards (drag up) - should work the same as selecting down
+1. Cursor only (no selection) - should do nothing
+2. Single line selection - should do nothing
+3. Select "Line 1\n" by double-clicking Line 1 then Shift+Down - verify Line 2 doesn't get a cursor
+4. Select backwards (drag up) - should work the same as selecting down
 
 ### Unit tests
 

@@ -46,6 +46,7 @@ Before implementation, understand these constraints:
 ### 1. Field Naming Must Be Preserved Exactly
 
 `FileEntry` has **inconsistent** but intentional naming:
+
 ```rust
 #[serde(rename = "isDraft")]
 pub is_draft: bool,           // → "isDraft" (camelCase)
@@ -69,6 +70,7 @@ pub path: PathBuf,
 ### 4. Nine Commands Use `AppHandle`
 
 These require the `tauri` feature on specta:
+
 - `save_recovery_data`, `save_crash_report`, `get_app_data_dir`
 - `copy_text_to_clipboard`, `open_preferences_folder`
 - `start_watching_project`, `stop_watching_project`, `select_project_folder`
@@ -76,6 +78,7 @@ These require the `tauri` feature on specta:
 ### 5. Bindings Must Exist Before TypeScript Compilation
 
 Either:
+
 - **Commit bindings** (recommended) - simpler CI
 - **Generate in CI** - add step before `pnpm run check:all`
 
@@ -94,6 +97,7 @@ cargo search specta
 ```
 
 As of writing, latest known versions:
+
 - `tauri-specta` = `2.0.0-rc.21`
 - `specta` = `2.0.0-rc.20` (verify!)
 
@@ -114,6 +118,7 @@ tauri = { version = "2", features = ["macos-private-api", "protocol-asset"] }
 ```
 
 **Required features explained**:
+
 - `derive` - enables `#[derive(Type)]` macro
 - `indexmap` - you use `IndexMap<String, Value>` in `FileEntry`
 - `tauri` - required for `AppHandle` support in 9 commands
@@ -164,6 +169,7 @@ pub struct FileEntry {
 **Critical**: Preserve ALL existing `#[serde(...)]` attributes. Do not add `rename_all`.
 
 Files to update:
+
 - [ ] `models/file_entry.rs` - `FileEntry` (has PathBuf, IndexMap, mixed naming)
 - [ ] `models/collection.rs` - `Collection`
 - [ ] `models/directory_info.rs` - `DirectoryInfo`, `DirectoryScanResult`
@@ -182,6 +188,7 @@ pub async fn scan_project(project_path: String) -> Result<Vec<Collection>, Strin
 ```
 
 Commands by module:
+
 - [ ] `lib.rs`: `greet`, `update_format_menu_state`
 - [ ] `commands/files.rs`: 21 commands (file operations, markdown parsing)
 - [ ] `commands/project.rs`: 8 commands (project scanning, schema reading)
@@ -215,11 +222,13 @@ pub path: PathBuf,
 **2.4 Verify compilation**
 
 After annotating each module:
+
 ```bash
 cargo check
 ```
 
 Fix any type errors before proceeding. Common issues:
+
 - Missing `Type` derive on nested types
 - PathBuf without `#[specta(type = String)]`
 - Custom types that need `Type` derive
@@ -264,12 +273,14 @@ pub fn run() {
 ```
 
 **Workflow implications**:
+
 1. When changing Rust commands, bindings update automatically on next `cargo run`
 2. PR reviewers can see binding changes in diff
 3. CI doesn't need special steps - file already exists
 4. If bindings are stale, TypeScript will fail (good - catches mistakes)
 
 **Add CI check (optional but recommended)**:
+
 ```yaml
 # In GitHub Actions workflow
 - name: Check bindings are up to date
@@ -308,27 +319,32 @@ const collections = await commands.scanProject(projectPath)
 Files to update (prioritized by impact):
 
 **High Priority (query hooks - most used)**:
+
 - [ ] `src/hooks/queries/useCollectionsQuery.ts`
 - [ ] `src/hooks/queries/useCollectionFilesQuery.ts`
 - [ ] `src/hooks/queries/useFileContentQuery.ts`
 - [ ] `src/hooks/queries/useDirectoryScanQuery.ts`
 
 **High Priority (mutation hooks)**:
+
 - [ ] `src/hooks/mutations/useSaveFileMutation.ts`
 - [ ] `src/hooks/mutations/useCreateFileMutation.ts`
 - [ ] `src/hooks/mutations/useRenameFileMutation.ts`
 
 **Medium Priority (action hooks and stores)**:
+
 - [ ] `src/hooks/editor/useEditorActions.ts`
 - [ ] `src/store/projectStore.ts`
 
 **Medium Priority (utilities)**:
+
 - [ ] `src/lib/ide.ts`
 - [ ] `src/lib/project-registry/index.ts`
 - [ ] `src/lib/project-registry/persistence.ts`
 - [ ] `src/lib/recovery/index.ts`
 
 **Lower Priority (components)**:
+
 - [ ] `src/components/preferences/panes/DebugPane.tsx`
 - [ ] `src/components/ui/context-menu.tsx`
 - [ ] `src/lib/editor/commands/menuIntegration.ts`
@@ -337,6 +353,7 @@ Files to update (prioritized by impact):
 **4.3 Remove manual type definitions**
 
 After migration, types in `src/types/domain.ts` become redundant:
+
 - Types are now auto-generated in `src/lib/bindings.ts`
 - Update imports throughout codebase to use generated types
 - Eventually delete `src/types/domain.ts` (or keep as documentation)
@@ -407,12 +424,14 @@ mockCommands.scanProject.mockResolvedValue([{ name: 'posts' }])
 **6.1 Update architecture documentation**
 
 Update these docs to reflect the new pattern:
+
 - [ ] `docs/developer/architecture-guide.md` - Add section on type-safe Tauri commands
 - [ ] `CLAUDE.md` - Update Technology Stack section
 
 **6.2 Create tauri-commands.md guide**
 
 New documentation covering:
+
 - How to add new commands with specta
 - Generated bindings location and usage
 - Testing patterns with typed commands
@@ -437,6 +456,7 @@ After each phase:
 ## Rollback Plan
 
 If issues arise:
+
 1. Revert Cargo.toml changes
 2. Revert lib.rs to use `generate_handler!` macro
 3. Keep frontend changes (invoke calls) as-is - they still work

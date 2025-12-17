@@ -12,14 +12,15 @@
 - `serde_yml` was **archived in September 2025** due to unsoundness issues (segfaults, RUSTSEC-2025-0068)
 
 **serde_norway** is the actively maintained fork that:
+
 - Uses maintained `unsafe-libyaml-norway` (not unmaintained libyaml)
 - Has recent releases (v0.9.42, Dec 2024)
 - Is recommended by RustSec advisory as a safe alternative
 
 - **Add**: `serde_norway = "0.9.42"`
-- **Crate**: https://crates.io/crates/serde_norway
-- **Docs**: https://docs.rs/serde_norway/
-- **Repo**: https://github.com/cafkafk/serde-yaml
+- **Crate**: <https://crates.io/crates/serde_norway>
+- **Docs**: <https://docs.rs/serde_norway/>
+- **Repo**: <https://github.com/cafkafk/serde-yaml>
 
 The API is identical to serde_yaml (drop-in replacement).
 
@@ -30,6 +31,7 @@ The backend currently uses a custom, hand-written YAML parser (~200 lines) and s
 **Evidence**: `src-tauri/src/commands/files.rs:425-706`
 
 **Current implementation handles**:
+
 - Basic key-value pairs
 - Inline and multi-line arrays
 - Nested objects
@@ -38,6 +40,7 @@ The backend currently uses a custom, hand-written YAML parser (~200 lines) and s
 - Schema-based field ordering
 
 **Current implementation DOES NOT handle**:
+
 - YAML anchors and aliases (`&anchor`, `*alias`)
 - Multi-line strings (block scalars `|`, `>`)
 - Explicit type tags (`!!str`, `!!int`)
@@ -49,6 +52,7 @@ The backend currently uses a custom, hand-written YAML parser (~200 lines) and s
 ## Risk of Current Approach
 
 If users have existing Astro projects with frontmatter that uses these features, the custom parser will:
+
 - Fail to parse (best case - user sees error)
 - Silently corrupt data (worst case - anchors/aliases lost, formatting broken)
 - Produce invalid YAML on save
@@ -68,6 +72,7 @@ This is particularly risky for a 1.0.0 release when users will be opening their 
 Analysis of `test/dummy-astro-project` and `test/starlight-minimal` shows:
 
 **YAML features used**:
+
 - ✅ Simple strings (quoted and unquoted)
 - ✅ Dates in `YYYY-MM-DD` format
 - ✅ Booleans (`true`, `false`)
@@ -76,6 +81,7 @@ Analysis of `test/dummy-astro-project` and `test/starlight-minimal` shows:
 - ✅ Nested objects (`metadata: { category: "dev", priority: 5 }`)
 
 **Advanced YAML features NOT used**:
+
 - ❌ YAML anchors/aliases
 - ❌ Multi-line block scalars (`|`, `>`)
 - ❌ Explicit type tags (`!!str`)
@@ -87,6 +93,7 @@ Analysis of `test/dummy-astro-project` and `test/starlight-minimal` shows:
 Replace both parsing and serialization with serde_norway.
 
 **Architecture changes**:
+
 1. Replace `HashMap<String, Value>` with `IndexMap<String, Value>` throughout
 2. Use `serde_norway` for parsing YAML → IndexMap
 3. Implement date normalization preprocessing before serialization
@@ -103,6 +110,7 @@ Replace both parsing and serialization with serde_norway.
 ### Date Normalization (MUST HAVE)
 
 **Current behavior** (lines 646-655):
+
 ```rust
 // Input: "2024-01-15T00:00:00Z"
 // Output: "2024-01-15"
@@ -111,6 +119,7 @@ Replace both parsing and serialization with serde_norway.
 This is **critical UX** - Astro users expect clean date-only fields, not verbose ISO datetimes.
 
 **Implementation approach**: Preprocessing before serialization
+
 ```rust
 fn normalize_dates(frontmatter: &mut IndexMap<String, Value>) {
     for (_, value) in frontmatter.iter_mut() {
@@ -148,10 +157,12 @@ fn normalize_value(value: &mut Value) {
 ### Field Ordering Implementation
 
 **Current logic** (lines 725-738):
+
 1. Schema fields first, in schema order
 2. Non-schema fields second, alphabetically
 
 **New implementation**:
+
 ```rust
 fn build_ordered_frontmatter(
     frontmatter: HashMap<String, Value>,
@@ -187,6 +198,7 @@ fn build_ordered_frontmatter(
 ### Type Signature Changes
 
 **Before**:
+
 ```rust
 pub struct MarkdownContent {
     pub frontmatter: HashMap<String, Value>,  // std::collections::HashMap
@@ -195,6 +207,7 @@ pub struct MarkdownContent {
 ```
 
 **After**:
+
 ```rust
 pub struct MarkdownContent {
     pub frontmatter: IndexMap<String, Value>,  // indexmap::IndexMap
@@ -209,22 +222,26 @@ The Tauri IPC serialization handles IndexMap → JavaScript object automatically
 ### Rust Code Changes Needed
 
 Search codebase for:
+
 ```bash
 grep -r "HashMap<String, Value>" src-tauri/
 ```
 
 Update all occurrences to `IndexMap<String, Value>` and add:
+
 ```rust
 use indexmap::IndexMap;
 ```
 
 **Files likely affected**:
+
 - `src-tauri/src/commands/files.rs` (primary)
 - Any other files that construct or consume `MarkdownContent`
 
 ## Detailed Implementation Steps
 
 ### Step 1: Add Dependency
+
 ```toml
 # Cargo.toml
 serde_norway = "0.9.42"
@@ -240,11 +257,13 @@ serde_norway = "0.9.42"
 ### Step 3: Replace Parser
 
 **Delete** (lines 425-623):
+
 - `parse_yaml_to_json()`
 - `parse_yaml_array()`
 - `parse_yaml_object()`
 
 **Replace with**:
+
 ```rust
 use serde_norway;
 
@@ -257,14 +276,17 @@ fn parse_yaml_to_json(yaml_str: &str) -> Result<IndexMap<String, Value>, String>
 ### Step 4: Replace Serializer
 
 **Keep** (lines 708-786):
+
 - `rebuild_markdown_with_frontmatter_and_imports_ordered()` function signature and structure
 - File ending newline logic
 - Imports handling
 
 **Replace** (lines 641-706):
+
 - Delete `serialize_value_to_yaml()`
 
 **New implementation**:
+
 ```rust
 fn rebuild_markdown_with_frontmatter_and_imports_ordered(
     frontmatter: &IndexMap<String, Value>,
@@ -304,18 +326,21 @@ fn rebuild_markdown_with_frontmatter_and_imports_ordered(
 ### Step 5: Update Tests
 
 **Tests to update**:
+
 - `test_parse_yaml_with_arrays()` (line ~1918)
 - `test_parse_and_serialize_roundtrip()` (line ~1954)
 - `test_rebuild_markdown_with_frontmatter()` (line ~1497)
 - `test_save_markdown_content()` (line ~1513)
 
 **Changes needed**:
+
 - Update type annotations: `HashMap` → `IndexMap`
 - Verify date normalization works
 - Verify field ordering works
 - Add test for nested object date normalization
 
 **New tests to add**:
+
 ```rust
 #[test]
 fn test_serde_yml_handles_anchors() {
@@ -368,6 +393,7 @@ fn test_field_ordering_preserved() {
 ### 3. ⚠️ Quoting Differences
 
 **Current behavior**: Smart quoting based on content
+
 ```yaml
 title: Simple Title        # No quotes
 description: "Has: colon"  # Quoted because contains colon
@@ -381,6 +407,7 @@ description: "Has: colon"  # Quoted because contains colon
 ### 4. ⚠️ Array Formatting
 
 **Current**:
+
 ```yaml
 tags:
   - rust
@@ -396,6 +423,7 @@ tags:
 **Impact**: Git diffs will show formatting changes on first save after migration
 
 **Mitigation**:
+
 - Document in release notes
 - This is pre-1.0.0 - acceptable one-time change
 - Users can review diffs before committing
@@ -403,6 +431,7 @@ tags:
 ## Requirements
 
 **Must Have**:
+
 - [x] Use `serde_norway` (not deprecated `serde_yaml` or unsound `serde_yml`)
 - [x] Parse all valid YAML frontmatter without data loss
 - [x] Handle existing Astro project frontmatter correctly
@@ -412,11 +441,13 @@ tags:
 - [x] Replace `HashMap` with `IndexMap` throughout
 
 **Should Have**:
+
 - [x] Maintain reasonable formatting (readable YAML output)
 - [x] Good error messages when frontmatter is invalid (serde_norway provides detailed errors)
 - [x] Minimal formatting differences from current implementation (only quoting and array indentation)
 
 **Nice to Have**:
+
 - [~] Identical quoting behavior to current implementation (serde_norway quotes more conservatively - acceptable)
 - [ ] Migration guide documenting formatting changes (not needed - changes are minimal)
 
@@ -426,31 +457,31 @@ tags:
 - [x] Custom parser functions removed (~200 lines deleted, replaced with 3-line serde_norway call)
 - [x] Custom serializer removed (~65 lines deleted, replaced with serde_norway)
 - [x] `HashMap<String, Value>` replaced with `IndexMap<String, Value>` everywhere
-  - [x] files.rs: All function signatures and HashMap::new() calls
-  - [x] file_entry.rs: FileEntry struct and tests
-  - [x] project.rs: Type annotations for frontmatter collection
+    - [x] files.rs: All function signatures and HashMap::new() calls
+    - [x] file_entry.rs: FileEntry struct and tests
+    - [x] project.rs: Type annotations for frontmatter collection
 - [x] Date normalization working (with tests)
-  - [x] normalize_dates() and normalize_value() helper functions (lines 426-459)
-  - [x] Recursive normalization in objects and arrays
+    - [x] normalize_dates() and normalize_value() helper functions (lines 426-459)
+    - [x] Recursive normalization in objects and arrays
 - [x] Field ordering working (with tests)
-  - [x] build_ordered_frontmatter() helper function (lines 461-489)
-  - [x] Schema order first, then alphabetical
+    - [x] build_ordered_frontmatter() helper function (lines 461-489)
+    - [x] Schema order first, then alphabetical
 - [x] All existing tests pass (102 tests → 109 tests, all passing)
 - [x] New tests for:
-  - [x] YAML anchors/aliases (test_serde_norway_handles_anchors)
-  - [x] Multi-line strings/block scalars (test_serde_norway_handles_block_scalars)
-  - [x] Nested object date normalization (test_date_normalization_in_nested_objects)
-  - [x] Date preservation for non-dates (test_date_normalization_preserves_non_dates)
-  - [x] Field ordering with schema (test_field_ordering_preserved)
-  - [x] Field ordering without schema (test_field_ordering_no_schema)
-  - [x] Field ordering partial match (test_field_ordering_partial_schema_match)
+    - [x] YAML anchors/aliases (test_serde_norway_handles_anchors)
+    - [x] Multi-line strings/block scalars (test_serde_norway_handles_block_scalars)
+    - [x] Nested object date normalization (test_date_normalization_in_nested_objects)
+    - [x] Date preservation for non-dates (test_date_normalization_preserves_non_dates)
+    - [x] Field ordering with schema (test_field_ordering_preserved)
+    - [x] Field ordering without schema (test_field_ordering_no_schema)
+    - [x] Field ordering partial match (test_field_ordering_partial_schema_match)
 - [ ] Manual testing against `test/dummy-astro-project`:
-  - [ ] Parse all articles and notes without errors
-  - [ ] Edit and save - verify no data corruption
-  - [ ] Verify dates are date-only format (not ISO datetime)
-  - [ ] Verify field ordering matches schema
+    - [ ] Parse all articles and notes without errors
+    - [ ] Edit and save - verify no data corruption
+    - [ ] Verify dates are date-only format (not ISO datetime)
+    - [ ] Verify field ordering matches schema
 - [ ] Manual testing against `test/starlight-minimal`:
-  - [ ] Same verification as above
+    - [ ] Same verification as above
 - [ ] Git diff review: formatting changes are acceptable
 
 ## Testing Strategy
@@ -485,8 +516,8 @@ tags:
 - Current implementation: `src-tauri/src/commands/files.rs:425-706`
 - Staff Engineering Review: `docs/reviews/2025-staff-engineering-review.md` (Issue #2)
 - Staff Engineer Review: `docs/reviews/staff-engineer-review-2025-10-24.md` (Issue #2)
-- serde_norway crate: https://crates.io/crates/serde_norway
-- serde_norway docs: https://docs.rs/serde_norway/
+- serde_norway crate: <https://crates.io/crates/serde_norway>
+- serde_norway docs: <https://docs.rs/serde_norway/>
 - IndexMap (already a dep): `Cargo.toml:44`
 
 ## Recommendation
@@ -496,6 +527,7 @@ tags:
 All critical features (field ordering, date normalization) can be preserved with preprocessing/postprocessing. The implementation is straightforward and well-understood.
 
 **Estimated effort**:
+
 - IndexMap migration: 1 hour
 - Parsing migration: 2 hours
 - Serialization migration (with date normalization): 3 hours
@@ -504,6 +536,7 @@ All critical features (field ordering, date normalization) can be preserved with
 - **Total: ~11 hours (1.5 days)**
 
 Migration is lower risk than originally estimated because:
+
 1. IndexMap is already a dependency
 2. Test projects show no advanced YAML features
 3. Date normalization is simple preprocessing
@@ -567,6 +600,7 @@ The migration introduces minor cosmetic differences that are functionally equiva
 ### Notes for Manual Testing
 
 When testing with real Astro projects, verify:
+
 - [ ] Files parse without errors (check console for parse failures)
 - [ ] Edit and save cycle preserves all frontmatter data
 - [ ] Dates appear as `2024-01-15` not `2024-01-15T00:00:00Z`

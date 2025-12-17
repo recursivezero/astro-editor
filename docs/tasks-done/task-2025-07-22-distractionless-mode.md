@@ -47,10 +47,10 @@ We'll implement distraction-free mode by adding opacity-based hiding for the Uni
 
 - Add new state: `distractionFreeBarsHidden: boolean` (default: false)
 - Add action: `handleTypingInEditor: () => void`
-  - This action checks if both panels are hidden internally
-  - Only sets `distractionFreeBarsHidden: true` if conditions are met
+    - This action checks if both panels are hidden internally
+    - Only sets `distractionFreeBarsHidden: true` if conditions are met
 - Add action: `setDistractionFreeBarsHidden: (hidden: boolean) => void`
-  - Direct setter for mouse hover events
+    - Direct setter for mouse hover events
 
 #### 2. Add Typing Detection to Editor
 
@@ -58,9 +58,9 @@ We'll implement distraction-free mode by adding opacity-based hiding for the Uni
 
 - Create a character counter that tracks consecutive characters typed
 - In the existing `EditorView.updateListener`:
-  - Increment counter on each character typed
-  - When counter reaches 4 characters, call a UI store action
-  - Reset counter after triggering or if user stops typing for 500ms
+    - Increment counter on each character typed
+    - When counter reaches 4 characters, call a UI store action
+    - Reset counter after triggering or if user stops typing for 500ms
 - The editor simply reports "user is typing" - it doesn't know about sidebars
 
 #### 3. Add Mouse Hover Detection
@@ -69,20 +69,22 @@ We'll implement distraction-free mode by adding opacity-based hiding for the Uni
 
 - Add `onMouseEnter` handlers to the root elements
 - When hovered and `distractionFreeBarsHidden` is true:
-  - Call `setDistractionFreeBarsHidden(false)`
-  - This reveals both bars simultaneously
+    - Call `setDistractionFreeBarsHidden(false)`
+    - This reveals both bars simultaneously
 
 #### 4. Apply Opacity-Based Hiding
 
 **Files:** `src/components/layout/UnifiedTitleBar.tsx` and `src/components/layout/StatusBar.tsx`
 
-- Add conditional styling based on `distractionFreeBarsHidden` state:
+- Add conditional styling based on `distractionFreeBarsHidden` state:  
+  
   ```tsx
   className={cn(
     // existing classes...
     distractionFreeBarsHidden && bothPanelsHidden && 'opacity-0 transition-opacity duration-300'
   )}
   ```
+  
 - The `transition-opacity duration-300` provides smooth fade in/out
 
 #### 5. Handle Sidebar State Changes
@@ -90,7 +92,7 @@ We'll implement distraction-free mode by adding opacity-based hiding for the Uni
 **File:** `src/store/uiStore.ts`
 
 - When either sidebar is toggled to visible:
-  - Automatically set `distractionFreeBarsHidden: false`
+    - Automatically set `distractionFreeBarsHidden: false`
 - This ensures bars always show when sidebars are open
 
 #### 6. Handle Edge Cases

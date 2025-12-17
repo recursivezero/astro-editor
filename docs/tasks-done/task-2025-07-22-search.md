@@ -3,12 +3,13 @@
 - Fuzzy search functionality (by filename and title [if present] only).
 - Probably best to have this via the command palette somehow.
 - Main goal is to make it quicker to find and edit documents in the current projects.
-- Unlikeley to be used heavily by users, since most editing will be on recent articles.
-- The UI needs to be fast and snappy, and intuative.
+- Unlikely to be used heavily by users, since most editing will be on recent articles.
+- The UI needs to be fast and snappy, and intuitive.
 
 ## Implementation Plan
 
 ### Overview
+
 Implement a simple, performant search feature integrated into the existing command palette infrastructure. The search will fuzzy-match against filenames and frontmatter titles across all collections in the current project.
 
 ### Technical Approach
@@ -38,6 +39,7 @@ Implement a simple, performant search feature integrated into the existing comma
 ### Implementation Details
 
 1. **Search Command Structure**:
+
    ```typescript
    {
      id: `search-file-${file.id}`,
@@ -65,6 +67,7 @@ Implement a simple, performant search feature integrated into the existing comma
    - Command palette closes automatically
 
 ### Benefits of This Approach
+
 - **Minimal code**: Reuses existing command palette and query infrastructure
 - **Fast**: No new API calls, uses cached data
 - **Intuitive**: Integrated into familiar command palette

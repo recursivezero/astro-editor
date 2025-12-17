@@ -1,17 +1,19 @@
 # Task: Linux Testing & Refinement (Part C)
 
-**Issue:** https://github.com/dannysmith/astro-editor/issues/56
+**Issue:** <https://github.com/dannysmith/astro-editor/issues/56>
 
 ## Overview
 
 This task covers Linux-specific testing and refinement that **requires a Linux environment**. It should be done after Part A (Cross-Platform Preparation) is complete and merged to main.
 
 **Prerequisites:**
+
 - Part A completed and merged
 - CI producing Linux AppImage artifacts
 - Linux test environment available
 
 **Scope:**
+
 - AppImage via CI (works across most distros)
 - No DEB/RPM/Flatpak/Snap packages initially
 - Native window decorations (not custom title bar)
@@ -28,6 +30,7 @@ Options include:
 - GitHub Actions for automated testing
 
 **Recommended Desktop Environments to Test:**
+
 - GNOME (most common)
 - KDE Plasma (second most common)
 
@@ -40,6 +43,7 @@ Options include:
 Verify the toolbar-below-native-decorations approach works.
 
 **Tasks:**
+
 - [ ] Confirm native title bar renders correctly
 - [ ] Verify `UnifiedTitleBarLinux.tsx` toolbar appears below decorations
 - [ ] Test on GNOME desktop
@@ -54,6 +58,7 @@ Verify the toolbar-below-native-decorations approach works.
 IDE paths for Linux were added in Part A. Verify they work correctly.
 
 **Tasks:**
+
 - [ ] Test that VS Code is detected correctly (system, snap, flatpak installs)
 - [ ] Refine paths in `get_augmented_path()` in `ide.rs` if needed
 
@@ -64,6 +69,7 @@ IDE paths for Linux were added in Part A. Verify they work correctly.
 Verify webkit2gtk renders the app correctly.
 
 **Tasks:**
+
 - [ ] Verify webkit2gtk-4.1 renders correctly
 - [ ] Test CodeMirror editor functionality
 - [ ] Check syntax highlighting works
@@ -78,6 +84,7 @@ Verify webkit2gtk renders the app correctly.
 Run through complete application testing on Linux.
 
 **Core Functionality:**
+
 - [ ] Open existing Astro project
 - [ ] Navigate file tree
 - [ ] Open and edit markdown files
@@ -89,6 +96,7 @@ Run through complete application testing on Linux.
 - [ ] Rename files
 
 **UI/UX:**
+
 - [ ] Dark mode toggle works
 - [ ] Keyboard shortcuts work (Ctrl-based)
 - [ ] Context menus appear correctly
@@ -97,17 +105,20 @@ Run through complete application testing on Linux.
 - [ ] Command palette works (Ctrl+K)
 
 **Editor:**
+
 - [ ] CodeMirror renders correctly
 - [ ] Syntax highlighting works
 - [ ] Drag and drop files into editor
 
 **Window Management:**
+
 - [ ] Window resizing works
 - [ ] Minimum size constraints enforced (1000×700)
 - [ ] Panel resizing works
 - [ ] Window opens at correct size (1400×900)
 
 **AppImage:**
+
 - [ ] AppImage runs without installation
 - [ ] App launches correctly
 - [ ] Auto-updater can check for updates
@@ -119,6 +130,7 @@ Run through complete application testing on Linux.
 Document and fix any Linux-specific bugs discovered during testing.
 
 **Known Areas to Watch:**
+
 - Webkit rendering differences from other platforms
 - File manager integration (`xdg-open`)
 - Font availability and rendering

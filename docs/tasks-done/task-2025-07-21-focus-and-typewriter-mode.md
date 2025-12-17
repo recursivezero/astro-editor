@@ -115,7 +115,7 @@ This approach leverages CodeMirror's built-in capabilities while avoiding comple
 
 ---
 
-# Step-by-Step Implementation Plan
+## Step-by-Step Implementation Plan
 
 ## Phase 1: Focus Mode Implementation
 
@@ -329,4 +329,4 @@ This implementation plan follows the existing architectural patterns while provi
 ## Extra Things to do here
 
 - [x] Use the centre icon for focus mode and don't change it to anything else on toggle. The button already shows its current state because it's a toggle component.
-- [ ] Can we hide the native scrollbars in the editor window whenever we're doing a programatic scroll in typewriter mode, just briefly enough that they don't show up when the scroll is automatic. They should work normally the rest of the time. If this has performance or timeing issues we don't have to do it.
+- [ ] Can we hide the native scrollbars in the editor window whenever we're doing a programmatic scroll in typewriter mode, just briefly enough that they don't show up when the scroll is automatic. They should work normally the rest of the time. If this has performance or timing issues we don't have to do it.

@@ -448,6 +448,7 @@ After implementation, we can answer:
 - [x] Custom domain configured (DNS propagation in progress)
 
 **Bug Fix:**
+
 - [x] Fixed `validate_app_data_path` to handle relative file paths (like `telemetry.json`)
 - [x] Telemetry now works correctly for both new and existing installations
 

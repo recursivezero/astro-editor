@@ -21,6 +21,7 @@ const { data: content } = useFileContentQuery(projectPath, fileId)
 ```
 
 However, the implementation was never completed:
+
 - ✅ `useFileContentQuery` hook exists (`src/hooks/queries/useFileContentQuery.ts`)
 - ✅ `useSaveFileMutation` hook exists (`src/hooks/mutations/useSaveFileMutation.ts`)
 - ❌ **No component uses either hook** - orphaned from incomplete migration
@@ -71,6 +72,7 @@ saveFile: async (showToast = true) => {
 ```
 
 **Issues**:
+
 1. Bypasses `useSaveFileMutation` (which already exists!)
 2. Doesn't invalidate `fileContent` query (not needed since query doesn't exist)
 3. Duplicates mutation logic in store
@@ -82,11 +84,13 @@ saveFile: async (showToast = true) => {
 ### Separation of Concerns
 
 **TanStack Query** (server state):
+
 - File content from disk
 - Automatic caching and refetching
 - Synchronization across components
 
 **Zustand Store** (client state):
+
 - File identifier (currentFile)
 - Local editing state (editorContent, frontmatter) - the "working copy"
 - Edit status (isDirty)
@@ -131,6 +135,7 @@ This is the standard pattern for editors with server data:
 #### 1.1 Simplify Store's `openFile` Action
 
 **Before** (editorStore.ts:235-279):
+
 ```typescript
 openFile: async (file: FileEntry) => {
   const markdownContent = await invoke('parse_markdown_content', {...})
@@ -144,6 +149,7 @@ openFile: async (file: FileEntry) => {
 ```
 
 **After**:
+
 ```typescript
 openFile: (file: FileEntry) => {
   set({
@@ -155,6 +161,7 @@ openFile: (file: FileEntry) => {
 ```
 
 **Changes**:
+
 - Remove `invoke` call
 - Remove content/frontmatter setting
 - Keep it synchronous (just an identifier update)
@@ -225,12 +232,14 @@ export function useEditorFileContent() {
 ```
 
 **Why two separate effects?**
+
 1. First effect: Clears stale content immediately (synchronous, no delay)
 2. Second effect: Populates with fresh data when query completes (asynchronous)
 
 This prevents the "wrong file showing briefly" bug during file switches.
 
 **Usage** in `Layout.tsx`:
+
 ```typescript
 export const Layout: React.FC = () => {
   const { isLoading, isError, error } = useEditorFileContent()
@@ -245,6 +254,7 @@ export const Layout: React.FC = () => {
 **File**: `src/components/editor/Editor.tsx`
 
 **Problem**: Current effect only depends on `currentFileId` (line 253):
+
 ```typescript
 }, [currentFileId]) // Only trigger when file changes
 ```
@@ -254,6 +264,7 @@ This means when external changes update `store.editorContent`, the effect doesn'
 **Solution**: Subscribe to editorContent as well:
 
 **Before** (Editor.tsx lines 27-28, 230-253):
+
 ```typescript
 const currentFileId = useEditorStore(state => state.currentFile?.id)
 const currentFilePath = useEditorStore(state => state.currentFile?.path)
@@ -274,6 +285,7 @@ useEffect(() => {
 ```
 
 **After**:
+
 ```typescript
 const currentFileId = useEditorStore(state => state.currentFile?.id)
 const currentFilePath = useEditorStore(state => state.currentFile?.path)
@@ -307,6 +319,7 @@ useEffect(() => {
 ```
 
 **Performance Note**: This effect now runs on every keystroke (via `editorContent` subscription). However:
+
 - The `!==` string comparison guards against actual updates (~<1ms for typical docs)
 - Only triggers view dispatch when content genuinely differs
 - Architecture guide allows this pattern for reactive data synchronization
@@ -338,6 +351,7 @@ const handleFileClick = (file: FileEntry) => {
 **Target**: Store delegates to mutation
 
 **Update** `editorStore.ts` saveFile action:
+
 ```typescript
 import { queryClient } from '../lib/query-client'
 import { queryKeys } from '../lib/query-keys'
@@ -400,6 +414,7 @@ saveFile: async (showToast = true) => {
 #### 2.2 Remove Dead Code
 
 Remove from `editorStore.ts`:
+
 - `recentlySavedFile` field and all its usages (lines 207, 230, 361, 401, 427)
 - Related timeout logic
 
@@ -470,6 +485,7 @@ export function useFileChangeHandler() {
 ```
 
 **Add to** `Layout.tsx`:
+
 ```typescript
 import { useFileChangeHandler } from '../hooks/useFileChangeHandler'
 
@@ -485,11 +501,13 @@ export const Layout: React.FC = () => {
 #### 4.1 Unit Tests
 
 **Create** `src/hooks/__tests__/useEditorFileContent.test.ts`:
+
 - Query fetches content on file change
 - Sync respects isDirty state
 - Error handling
 
 **Create** `src/hooks/__tests__/useFileChangeHandler.test.ts`:
+
 - Ignores changes when isDirty=true
 - Invalidates query when isDirty=false
 - Only handles current file
@@ -497,6 +515,7 @@ export const Layout: React.FC = () => {
 #### 4.2 Integration Tests
 
 Update `src/store/__tests__/storeQueryIntegration.test.ts`:
+
 - openFile sets identifier only
 - Save invalidates fileContent query
 
@@ -517,6 +536,7 @@ Update `src/store/__tests__/storeQueryIntegration.test.ts`:
 **Scenario**: Save completes → watcher fires before `isDirty=false`
 
 **Why it can't happen**:
+
 ```typescript
 // editorStore.ts saveFile sequence:
 await invoke('save_markdown_content', {...})  // Blocks until write completes
@@ -531,6 +551,7 @@ set({ isDirty: false })                        // Updates synchronously
 **Scenario**: External change → query refetch → content update → cursor jumps
 
 **Already handled**: Editor checks if content changed before updating (Editor.tsx:236):
+
 ```typescript
 if (viewRef.current.state.doc.toString() !== editorContent) {
   // Only update if different
@@ -544,6 +565,7 @@ Plus `isProgrammaticUpdate` flag prevents triggering onChange (line 238).
 **Scenario**: Type → auto-save → watcher → query refetch → overwrite?
 
 **Why it's safe**:
+
 ```typescript
 // While typing: isDirty=true
 // Save starts: isDirty=true (still)
@@ -558,6 +580,7 @@ Plus `isProgrammaticUpdate` flag prevents triggering onChange (line 238).
 **Scenario**: Two Astro Editor windows, same file
 
 **Behavior**:
+
 - Instance A saves → watcher fires in both
 - Instance A: just saved, data matches → no visible change
 - Instance B: if isDirty=true, ignores change (user protected)
@@ -570,6 +593,7 @@ Plus `isProgrammaticUpdate` flag prevents triggering onChange (line 238).
 **Scenario**: `git checkout other-branch` changes file
 
 **Behavior**:
+
 - Watcher fires
 - If isDirty=true: change ignored (user's work protected)
 - If isDirty=false: file reloads with branch's version
@@ -605,22 +629,26 @@ The original task's solution now works as designed because queries exist to inva
 ## Risk Assessment
 
 **Implementation Risk**: ✅ LOW
+
 - Well-defined pattern (documented in architecture guide)
 - Existing hooks already exist (just unused)
 - Small, incremental changes
 - Clear rollback path
 
 **Testing Risk**: ✅ LOW
+
 - Easy to test manually (edit in VS Code)
 - Clear success criteria
 - No timing assumptions
 
 **Performance Risk**: ✅ VERY LOW
+
 - TanStack Query prevents unnecessary re-renders
 - Editor already optimized with memoization
 - No change to auto-save timing
 
 **Breaking Change Risk**: ✅ VERY LOW
+
 - Internal implementation detail
 - User-facing behavior unchanged
 - All data flows preserved
@@ -630,16 +658,18 @@ The original task's solution now works as designed because queries exist to inva
 ## Migration Checklist
 
 ### Phase 1: File Opening
+
 - [ ] Simplify `openFile` to identifier-only update (editorStore.ts)
 - [ ] Create `useEditorFileContent` hook with TWO effects:
-  - [ ] Effect 1: Clear stale content on file change
-  - [ ] Effect 2: Sync query data to store
+    - [ ] Effect 1: Clear stale content on file change
+    - [ ] Effect 2: Sync query data to store
 - [ ] Add hook to Layout.tsx
 - [ ] Update Editor.tsx to subscribe to editorContent (CRITICAL)
 - [ ] Update LeftSidebar handleFileClick to synchronous
 - [ ] Test: File opens correctly, no stale content shown
 
 ### Phase 2: File Saving
+
 - [ ] Add `fileContent` query invalidation to saveFile
 - [ ] Remove `recentlySavedFile` field
 - [ ] Remove timeout logic
@@ -647,17 +677,20 @@ The original task's solution now works as designed because queries exist to inva
 - [ ] Test: Save works, queries invalidate
 
 ### Phase 3: File Watcher
+
 - [ ] Create `useFileChangeHandler` hook
 - [ ] Add hook to Layout
 - [ ] Test: External changes detected
 
 ### Phase 4: Testing
+
 - [ ] Unit tests for new hooks
 - [ ] Integration tests for store/query flow
 - [ ] Manual testing all scenarios
 - [ ] Performance profiling (React DevTools)
 
 ### Phase 5: Cleanup
+
 - [ ] Run `pnpm run check:all`
 - [ ] Update documentation if needed
 - [ ] Mark Task 1 checklist items as complete
@@ -679,6 +712,7 @@ The original task's solution now works as designed because queries exist to inva
 ## Success Criteria
 
 ### Must Have
+
 - [ ] File opening uses TanStack Query
 - [ ] File saving invalidates fileContent query
 - [ ] External changes detected and reloaded
@@ -687,6 +721,7 @@ The original task's solution now works as designed because queries exist to inva
 - [ ] All tests pass
 
 ### Verification Tests
+
 - [ ] Type in editor → edit in VS Code → no reload (isDirty protects)
 - [ ] Save file → edit in VS Code → file reloads (change detected)
 - [ ] Auto-save every 2s → no cursor jumps
@@ -694,6 +729,7 @@ The original task's solution now works as designed because queries exist to inva
 - [ ] Console logs show watcher events
 
 ### Nice to Have (Future)
+
 - [ ] Toast notification for external changes while dirty
 - [ ] Use `useSaveFileMutation` instead of store action
 - [ ] Sidebar updates when files added/removed externally
@@ -717,11 +753,13 @@ The original task's solution now works as designed because queries exist to inva
 This implementation follows patterns documented in `docs/developer/architecture-guide.md`:
 
 ### ✅ State Management (lines 42-110)
+
 - **TanStack Query** for server state (file content from disk) ✅
 - **Zustand** for client state (currentFile identifier, local editing state) ✅
 - **useState** not needed (no local UI state) ✅
 
 ### ✅ getState() Pattern (lines 200-231)
+
 - `useFileChangeHandler` uses `getState()` for stable callbacks ✅
 - `useEditorFileContent` uses `getState()` to check isDirty ✅
 - No render cascade issues ✅
@@ -733,6 +771,7 @@ This implementation follows patterns documented in `docs/developer/architecture-
 **This implementation**: Editor subscribes to `editorContent` (changes every keystroke)
 
 **Why it's acceptable**:
+
 1. **Guard prevents work**: `if (viewRef.current.state.doc.toString() !== editorContent)` - effect body only runs when content truly differs
 2. **String comparison is fast**: <1ms for typical documents, highly optimized in JS
 3. **Required for correctness**: Must detect external changes to maintain disk as source of truth
@@ -742,16 +781,19 @@ This implementation follows patterns documented in `docs/developer/architecture-
 The architecture guide allows subscriptions when necessary for reactive updates. This is a justified exception.
 
 ### ✅ TanStack Query Patterns (lines 290-352)
+
 - Query keys factory used ✅
 - Automatic cache invalidation in mutations ✅
 - Bridge pattern for store/query integration ✅
 
 ### ✅ Module Organization (lines 112-197)
+
 - Hook in `src/hooks/` (uses React hooks internally) ✅
 - Single responsibility per hook ✅
 - Clear public API ✅
 
 ### ✅ Testing Strategy (lines 432-453)
+
 - Unit tests for hooks ✅
 - Integration tests for store/query flow ✅
 - Manual testing scenarios ✅
@@ -763,6 +805,7 @@ The architecture guide allows subscriptions when necessary for reactive updates.
 **For a new Claude Code session, you'll need to understand these files:**
 
 ### Core Implementation Files
+
 - `src/store/editorStore.ts` - Store actions to modify (openFile, saveFile)
 - `src/components/editor/Editor.tsx` - Editor subscription to update
 - `src/components/layout/LeftSidebar.tsx` - File click handler to update
@@ -771,19 +814,23 @@ The architecture guide allows subscriptions when necessary for reactive updates.
 - `src/lib/query-keys.ts` - Query key factory (unchanged)
 
 ### New Files to Create
+
 - `src/hooks/useEditorFileContent.ts` - Bridge hook (server → client state)
 - `src/hooks/useFileChangeHandler.ts` - File watcher event handler
 
 ### Test Files to Update
+
 - `src/store/__tests__/editorStore.integration.test.ts` - Remove recentlySavedFile mocks
 - `src/store/__tests__/storeQueryIntegration.test.ts` - Update for new openFile behavior
 - `src/hooks/editor/useEditorHandlers.test.ts` - Remove recentlySavedFile mocks
 
 ### Test Files to Create
+
 - `src/hooks/__tests__/useEditorFileContent.test.ts` - New hook tests
 - `src/hooks/__tests__/useFileChangeHandler.test.ts` - New hook tests
 
 ### Documentation
+
 - `docs/developer/architecture-guide.md` - Reference for patterns
 - `docs/tasks-done/task-1-tanstack-query.md` - Original incomplete migration
 - `src-tauri/src/commands/watcher.rs` - File watcher implementation (unchanged)
@@ -794,14 +841,18 @@ The architecture guide allows subscriptions when necessary for reactive updates.
 ## Critical Implementation Notes for New Session
 
 ### 1. Two Separate Effects in useEditorFileContent
+
 The hook needs TWO effects, not one:
+
 - **Effect 1** clears content synchronously when file changes
 - **Effect 2** populates content asynchronously when query completes
 
 Don't combine them! The clearing must happen immediately.
 
 ### 2. Editor Subscription is Required
+
 The Editor MUST subscribe to `editorContent`:
+
 ```typescript
 const editorContent = useEditorStore(state => state.editorContent)
 ```
@@ -809,9 +860,11 @@ const editorContent = useEditorStore(state => state.editorContent)
 Without this, external changes won't trigger the effect and the view won't update.
 
 ### 3. Don't Remove getState() Calls
+
 The existing comment says "Get content directly from store when file changes" (Editor.tsx:234). This is being REPLACED with a subscription. The old pattern was wrong.
 
 ### 4. isDirty State Machine
+
 ```
 File opens → isDirty=false
 User types → isDirty=true
@@ -824,12 +877,16 @@ External change while isDirty=false → RELOAD
 This is the critical safety mechanism. Don't modify isDirty timing.
 
 ### 5. Remove recentlySavedFile Completely
+
 It's dead code. Remove from:
+
 - editorStore.ts lines 207, 230, 361, 401, 427
 - All test mock objects
 
 ### 6. Performance is Acceptable
+
 The Editor effect running on every keystroke is acceptable because:
+
 - Guard prevents work when content matches
 - String comparison is ~<1ms
 - No re-render cascade (view updates directly)

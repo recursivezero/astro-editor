@@ -1,6 +1,6 @@
 # Refactor: Replace event bridge pattern with Hybrid Action Hooks
 
-https://github.com/dannysmith/astro-editor/issues/49
+<https://github.com/dannysmith/astro-editor/issues/49>
 
 ## Overview
 
@@ -24,6 +24,7 @@ The codebase currently uses **both** approaches inconsistently:
 | `saveFile` | ❌ **Event Bridge + Polling** | Store action with polling | Via `get-schema-field-order` event |
 
 This inconsistency creates confusion. `useCommandContext.ts` demonstrates this:
+
 ```typescript
 export function useCommandContext(): CommandContext {
   const { saveFile } = useEditorStore()  // Direct store access
@@ -88,6 +89,7 @@ useEffect(() => {
 **Location**: `src/hooks/useCreateFile.ts` (260 lines), `src/hooks/useLayoutEventListeners.ts` (lines 154-161)
 
 **This already implements the pattern we're proposing!** The hook:
+
 - ✅ Has direct access to `useCollectionsQuery()` (no events needed)
 - ✅ Uses `getState()` to access stores without subscriptions
 - ✅ Contains complex business logic (file creation, schema handling, frontmatter generation)
@@ -269,6 +271,7 @@ Still adds indirection, but at least it's type-safe and synchronous (no polling)
 ### Phase 0: Acknowledge Existing Pattern
 
 **Before starting**, recognize that:
+
 - `useCreateFile` already implements Hybrid Action Hooks successfully in production (260 lines)
 - This refactor extends the proven pattern to `saveFile` for consistency
 - We're not introducing a new pattern—we're making an existing pattern consistent
@@ -278,6 +281,7 @@ Still adds indirection, but at least it's type-safe and synchronous (no polling)
 **Create focused hooks to avoid god hook anti-pattern** (coordinates with Task 2):
 
 1. **Create `src/hooks/editor/useEditorActions.ts`**
+
    ```typescript
    export function useEditorActions() {
      const queryClient = useQueryClient()
@@ -317,6 +321,7 @@ Still adds indirection, but at least it's type-safe and synchronous (no polling)
 ### Phase 2: Update Store for Auto-Save
 
 1. Update `editorStore` to accept auto-save callback:
+
    ```typescript
    autoSaveCallback: null as (() => Promise<void>) | null,
    setAutoSaveCallback: callback => set({ autoSaveCallback: callback }),
@@ -329,6 +334,7 @@ Still adds indirection, but at least it's type-safe and synchronous (no polling)
    ```
 
 2. Wire in Layout:
+
    ```typescript
    const { saveFile } = useEditorActions()
 
@@ -358,6 +364,7 @@ Still adds indirection, but at least it's type-safe and synchronous (no polling)
    - `docs/developer/architecture-guide.md` (lines 360-369): Document new pattern as standard
 
 2. **Add testing strategy**:
+
    ```typescript
    import { renderHook } from '@testing-library/react'
    import { QueryClientProvider } from '@tanstack/react-query'
@@ -406,11 +413,11 @@ Still adds indirection, but at least it's type-safe and synchronous (no polling)
 - Full analysis: `docs/reviews/event-bridge-refactor-analysis.md` (572 lines)
 - Original review: `docs/reviews/staff-engineer-review-2025-10-24.md` (section 1)
 - Current implementation:
-  - **Polling pattern (THE PROBLEM)**: `src/store/editorStore.ts:115-161` (save file + polling event bridge)
-  - **Event listener**: `src/components/frontmatter/FrontmatterPanel.tsx:42-77` (responds to get-schema-field-order)
-  - **Hybrid Action Hook (ALREADY DONE)**: `src/hooks/useCreateFile.ts:1-260` (proven pattern in production)
-  - **Event dispatch**: `src/hooks/useLayoutEventListeners.ts:102,158` (create-new-file convenience events)
-  - **Mixed usage**: `src/hooks/commands/useCommandContext.ts:12,38-40` (saveFile direct, createNewFile event)
+    - **Polling pattern (THE PROBLEM)**: `src/store/editorStore.ts:115-161` (save file + polling event bridge)
+    - **Event listener**: `src/components/frontmatter/FrontmatterPanel.tsx:42-77` (responds to get-schema-field-order)
+    - **Hybrid Action Hook (ALREADY DONE)**: `src/hooks/useCreateFile.ts:1-260` (proven pattern in production)
+    - **Event dispatch**: `src/hooks/useLayoutEventListeners.ts:102,158` (create-new-file convenience events)
+    - **Mixed usage**: `src/hooks/commands/useCommandContext.ts:12,38-40` (saveFile direct, createNewFile event)
 
 ## Related Tasks
 
@@ -950,7 +957,7 @@ useEffect(() => {
 
 ## Decision Framework
 
-### Choose Hybrid Action Hooks If:
+### Choose Hybrid Action Hooks If
 
 ✅ Team is React-heavy (not deep Tauri/Rust experience)
 ✅ Codebase already uses custom hooks extensively
@@ -961,7 +968,7 @@ useEffect(() => {
 
 **Best For**: React-first teams, rapid iteration, standard architectures
 
-### Choose Callback Registry If:
+### Choose Callback Registry If
 
 ✅ Planning multi-window architecture
 ✅ Want all business logic centralized in stores

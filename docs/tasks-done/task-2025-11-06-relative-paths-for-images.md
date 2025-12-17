@@ -1,6 +1,6 @@
 # Task: Use relative paths for images and files in editor and frontmatter
 
-https://github.com/dannysmith/astro-editor/issues/53
+<https://github.com/dannysmith/astro-editor/issues/53>
 
 Images and files dragged into the editor and images added via the frontmatter panel currently work like this:
 
@@ -741,24 +741,24 @@ To change this setting, go to Project Settings → Asset Path Style.
 
 ### TypeScript (Frontend)
 
-4. `src/types/preferences.ts` - Add `useRelativeAssetPaths` field
-5. `src/lib/files/fileProcessing.ts` - Update function signature + remove normalization
-6. `src/lib/editor/dragdrop/fileProcessing.ts` - Pass new parameters
-7. `src/components/frontmatter/fields/ImageField.tsx` - Pass new parameters
+1. `src/types/preferences.ts` - Add `useRelativeAssetPaths` field
+2. `src/lib/files/fileProcessing.ts` - Update function signature + remove normalization
+3. `src/lib/editor/dragdrop/fileProcessing.ts` - Pass new parameters
+4. `src/components/frontmatter/fields/ImageField.tsx` - Pass new parameters
 
 ### UI
 
-8. `src/components/settings/ProjectSettings.tsx` - Add toggle control
+1. `src/components/settings/ProjectSettings.tsx` - Add toggle control
 
 ### Testing
 
-9. Manual testing checklist (see Phase 5)
-10. Verify `resolve_image_path` compatibility
+1. Manual testing checklist (see Phase 5)
+2. Verify `resolve_image_path` compatibility
 
 ### Documentation
 
-11. Release notes - Breaking change notice
-12. User guide - Document setting (if applicable)
+1. Release notes - Breaking change notice
+2. User guide - Document setting (if applicable)
 
 ---
 

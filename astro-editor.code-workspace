@@ -1,0 +1,53 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"*.css": "tailwindcss"
+		},
+		"workbench.colorCustomizations": {
+			"activityBar.activeBackground": "#22189b",
+			"activityBar.background": "#22189b",
+			"activityBar.foreground": "#e7e7e7",
+			"activityBar.inactiveForeground": "#e7e7e799",
+			"activityBarBadge.background": "#c12a1e",
+			"activityBarBadge.foreground": "#e7e7e7",
+			"commandCenter.border": "#e7e7e799",
+			"sash.hoverBorder": "#22189b",
+			"sideBar.border": "#22189b",
+			"statusBar.background": "#18116f",
+			"statusBar.foreground": "#e7e7e7",
+			"statusBarItem.hoverBackground": "#22189b",
+			"statusBarItem.remoteBackground": "#18116f",
+			"statusBarItem.remoteForeground": "#e7e7e7",
+			"tab.activeBorder": "#22189b",
+			"titleBar.activeBackground": "#18116f",
+			"titleBar.activeForeground": "#e7e7e7",
+			"titleBar.inactiveBackground": "#18116f99",
+			"titleBar.inactiveForeground": "#e7e7e799"
+		},
+		"peacock.color": "#18116f",
+		"cSpell.words": [
+			"astroeditor",
+			"Clippy",
+			"collectionname",
+			"Configurator",
+			"contentcollection",
+			"datepicker",
+			"distractionless",
+			"indexmap",
+			"keymap",
+			"mycollection",
+			"releaserc",
+			"serde",
+			"shadui",
+			"tauri",
+			"Tauri",
+			"testdata",
+			"usize"
+		]
+	}
+}

@@ -1,6 +1,6 @@
 # Task: Better Schema Parser
 
-https://github.com/dannysmith/astro-editor/issues/15
+<https://github.com/dannysmith/astro-editor/issues/15>
 
 ## Background
 

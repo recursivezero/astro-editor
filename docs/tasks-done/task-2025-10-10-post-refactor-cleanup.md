@@ -79,16 +79,19 @@ All test mocks have been updated to use `complete_schema` instead of `schema`, b
 ### Options
 
 **Option A: Delete Tests Entirely**
+
 - These test old Zod parsing which is completely removed
 - Parser now only discovers collections, doesn't parse schemas
 - Tests are no longer relevant to current functionality
 
 **Option B: Convert to schema_merger.rs Tests**
+
 - Port test patterns to `src-tauri/src/schema_merger.rs` tests
 - Use same test cases but test the new parsing implementation
 - Maintains test coverage for parsing edge cases
 
 **Option C: Keep as Reference**
+
 - Leave ignored tests in place as reference documentation
 - Add comprehensive comment explaining their historical purpose
 - Useful for understanding what used to be tested
@@ -119,6 +122,7 @@ All test mocks have been updated to use `complete_schema` instead of `schema`, b
 From Task 2 specification, the following test areas need coverage:
 
 #### Primitives & Constraints
+
 - [ ] String with minLength/maxLength
 - [ ] String with format: email, uri
 - [ ] Number with min/max, exclusiveMinimum/exclusiveMaximum
@@ -127,6 +131,7 @@ From Task 2 specification, the following test areas need coverage:
 - [ ] Date (anyOf with date-time, date, unix-time)
 
 #### Complex Types
+
 - [ ] Enum (type: string, enum: [...])
 - [ ] Literal (type: string, const: "value")
 - [ ] Arrays (simple, with items schema, with minItems/maxItems)
@@ -136,17 +141,20 @@ From Task 2 specification, the following test areas need coverage:
 - [ ] Unions (anyOf array - non-reference, non-date)
 
 #### References
+
 - [ ] Single reference detection (anyOf pattern)
 - [ ] Array of references detection
 - [ ] Self-references (articles → articles)
 
 #### Zod Reference Extraction
+
 - [ ] Extract from `reference('collectionName')`
 - [ ] Extract from `z.array(reference('collectionName'))`
 - [ ] Handle single and double quotes
 - [ ] Build correct map of field_name → collection_name
 
 #### Schema Merging
+
 - [ ] JSON schema alone (no references)
 - [ ] JSON + Zod merge (references populated)
 - [ ] Single references get `reference_collection`
@@ -154,11 +162,13 @@ From Task 2 specification, the following test areas need coverage:
 - [ ] Fallback to Zod-only when JSON schema missing/malformed
 
 #### File-based Collections
+
 - [ ] Detect additionalProperties structure
 - [ ] Use additionalProperties as entry schema
 - [ ] Parse correctly (authors.json example)
 
 #### TypeScript Integration
+
 - [ ] `deserializeCompleteSchema()` correctly maps all fields
 - [ ] Field type enum mapping works
 - [ ] snake_case to camelCase conversion works
@@ -168,6 +178,7 @@ From Task 2 specification, the following test areas need coverage:
 ### Test Organization
 
 Create comprehensive test files:
+
 ```
 src-tauri/src/
 ├── schema_merger.rs
@@ -199,6 +210,7 @@ src-tauri/src/
 **Location:** `src-tauri/src/parser.rs`
 
 **Current State:**
+
 - Old Zod parsing functions marked with `#[allow(dead_code)]`
 - Large comment at top: "NOTE: The following structs and functions are deprecated..."
 - Functions kept for reference but not used
@@ -206,12 +218,14 @@ src-tauri/src/
 ### Deprecated Code (lines 5-1017)
 
 **Structs:**
+
 - `ZodField`
 - `ZodFieldConstraints`
 - `ZodFieldType` enum
 - `ParsedSchema`
 
 **Functions (~20 functions):**
+
 - `extract_basic_schema()`
 - `extract_schema_from_collection_block()`
 - `parse_schema_fields()`
@@ -232,21 +246,25 @@ src-tauri/src/
 ### Options
 
 **Option A: Delete Entirely**
+
 - Remove all deprecated code (~1000 lines)
 - Cleaner codebase
 - Risk: Lose implementation reference if needed later
 
 **Option B: Move to Separate Archive Module**
-```
+
+```plaintext
 src-tauri/src/
 ├── parser.rs           # Only active code
 └── parser_deprecated.rs # Archived for reference
 ```
+
 - Keeps reference available
 - Removes clutter from main module
 - Can be deleted later if never needed
 
 **Option C: Document and Keep**
+
 - Add comprehensive documentation explaining history
 - Keep current `#[allow(dead_code)]` approach
 - Simplest option, most clutter
@@ -305,23 +323,27 @@ src-tauri/src/
 ## Success Criteria
 
 ### Phase 1: Test Fixes (Quick Wins)
+
 - [ ] All 5 TypeScript tests passing
 - [ ] Tests verify business logic correctly
 - [ ] No test warnings or errors
 
 ### Phase 2: Parser Cleanup
+
 - [ ] Deprecated parser tests either deleted or ported
 - [ ] parser.rs only contains active collection discovery code
 - [ ] Deprecated parsing code archived in separate module
 - [ ] All Rust tests passing
 
 ### Phase 3: Test Coverage
+
 - [ ] schema_merger.rs has comprehensive test suite
 - [ ] >90% code coverage for schema_merger module
 - [ ] All test categories from Task 2 spec covered
 - [ ] Test documentation in place
 
 ### Phase 4: Documentation
+
 - [ ] All docs updated to reflect new architecture
 - [ ] Code comments accurate and helpful
 - [ ] No references to removed code
@@ -331,15 +353,18 @@ src-tauri/src/
 ## Priority & Sequencing
 
 ### High Priority (Do First)
+
 1. Fix failing TypeScript tests (blocks confidence in test suite)
 2. Decide on deprecated parser tests (clean up technical debt)
 
 ### Medium Priority (Do Next)
-3. Comprehensive schema_merger tests (ensures reliability)
-4. Archive deprecated parser code (reduces clutter)
+
+1. Comprehensive schema_merger tests (ensures reliability)
+2. Archive deprecated parser code (reduces clutter)
 
 ### Low Priority (Nice to Have)
-5. Documentation polish (improves maintainability)
+
+1. Documentation polish (improves maintainability)
 
 ---
 
@@ -362,5 +387,6 @@ src-tauri/src/
 
 **Last Updated:** 2025-10-09
 **Related Tasks:**
+
 - Supersedes: `task-2-schema-architecture-refactor.md` (Phase 4 cleanup items)
 - Depends on: Task 2 Phase 4 completion

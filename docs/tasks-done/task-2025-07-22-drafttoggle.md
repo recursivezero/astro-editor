@@ -46,15 +46,17 @@ const showDraftsOnly = collectionViewSettings?.showDraftsOnly || false
 **Location**: In the header div (around line 294-322), add the toggle to the right side of the header title.
 
 **Design Pattern**: Follow the focus mode toggle pattern from `UnifiedTitleBar.tsx`:
-- Use `Button` with `variant="ghost"` and `size="sm"` 
+
+- Use `Button` with `variant="ghost"` and `size="sm"`
 - Use `FileText` and `Filter` icons (or `Eye`/`EyeOff` pattern)
 - Add conditional styling when drafts-only mode is active
 
 **Visual Indicators**:
+
 - When drafts-only mode is active:
-  - Button should have accent color (primary or orange/yellow theme)
-  - Header background could have subtle color tint
-  - Show "(Drafts Only)" text or indicator
+    - Button should have accent color (primary or orange/yellow theme)
+    - Header background could have subtle color tint
+    - Show "(Drafts Only)" text or indicator
 
 ### 4. Implement Filtering Logic
 
@@ -138,6 +140,7 @@ const handleToggleDraftsOnly = useCallback(() => {
 ### 7. Visual Clarity Enhancements
 
 **When drafts-only mode is active**:
+
 - Add subtle orange/yellow tint to header background
 - Show visual indicator: "(Drafts Only)" text or badge
 - Toggle button should be visually distinct (colored)

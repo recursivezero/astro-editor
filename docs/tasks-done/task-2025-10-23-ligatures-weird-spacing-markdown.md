@@ -1,6 +1,6 @@
 # Task: Bug: Ligatures in iA Writer Duo cause weird spacing in markdown links
 
-https://github.com/dannysmith/astro-editor/issues/1
+<https://github.com/dannysmith/astro-editor/issues/1>
 
 If strings like `fl` are present in URLs which are used in markdown links or image embeds, Codemirror renders some janky spacing at the end.
 
@@ -15,6 +15,7 @@ If strings like `fl` are present in URLs which are used in markdown links or ima
 **Trade-off**: This disables all ligatures but ensures accurate cursor positioning. iA Writer Duo remains the font, just without ligature rendering.
 
 **Testing Required**: User should verify that:
+
 1. Cursor positions correctly in links/URLs with "fl", "fi", etc.
 2. The visual appearance is acceptable without ligatures
 3. No other cursor positioning issues remain

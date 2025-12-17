@@ -22,6 +22,7 @@ Address minor UI/UX inconsistencies identified in the comprehensive codebase rev
 
 1. Investigate why `text-foreground` wasn't working in dark mode originally
 2. Fix CSS variable definitions if needed:
+
    ```css
    :root {
      --foreground: 0 0% 10%;
@@ -31,7 +32,9 @@ Address minor UI/UX inconsistencies identified in the comprehensive codebase rev
      --foreground: 0 0% 90%;  /* Light text for dark mode */
    }
    ```
+
 3. Consider adding `--heading` variable if headings need more contrast than body text:
+
    ```css
    :root {
      --heading: 0 0% 5%;      /* Darker than foreground */
@@ -41,10 +44,12 @@ Address minor UI/UX inconsistencies identified in the comprehensive codebase rev
      --heading: 0 0% 98%;     /* Lighter than foreground */
    }
    ```
+
 4. Replace all instances of `text-gray-900 dark:text-white` with semantic tokens
 5. Test thoroughly in both light and dark modes
 
 **Affected Files:**
+
 - `src/components/preferences/panes/GeneralPane.tsx:28`
 - `src/components/preferences/panes/ProjectSettingsPane.tsx`
 - `src/components/preferences/panes/CollectionSettingsPane.tsx`
@@ -92,6 +97,7 @@ Add to `src/App.css`:
 ```
 
 **Affected Files:**
+
 - `src/components/frontmatter/fields/FieldWrapper.tsx:48`
 - `src/components/layout/LeftSidebar.tsx:273, 339, 352`
 - `src/components/layout/StatusBar.tsx:33`
@@ -112,6 +118,7 @@ Add to `src/App.css`:
 **Solution:** Standardize all toolbar icon buttons to `size-7` (28px) for better touch targets.
 
 **Pattern:**
+
 ```tsx
 <Button
   variant="ghost"
@@ -123,6 +130,7 @@ Add to `src/App.css`:
 ```
 
 **Affected Files:**
+
 - `src/components/layout/LeftSidebar.tsx:282` - Update `size-6` to `size-7`
 - `src/components/layout/UnifiedTitleBar.tsx` - Already correct at `size-7`
 
@@ -148,6 +156,7 @@ Add to `src/App.css`:
 ```
 
 **Pattern provides:**
+
 - Subtle visual separation
 - Works well in both light and dark modes
 - Consistent with existing canonical example
@@ -191,6 +200,7 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({
 ```
 
 **Update imports in:**
+
 - `src/components/preferences/panes/GeneralPane.tsx`
 - `src/components/preferences/panes/ProjectSettingsPane.tsx`
 - `src/components/preferences/panes/CollectionSettingsPane.tsx`

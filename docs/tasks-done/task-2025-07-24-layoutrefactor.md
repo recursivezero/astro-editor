@@ -61,7 +61,8 @@ Our main application structure currently has unnecessary complexity with nested 
    - MainEditor becomes purely about editor content
 
 6. **Directory Structure Refactor**:
-   ```
+
+   ```plaintext
    src/components/
    ├── layout/
    │   ├── Layout.tsx
@@ -94,6 +95,7 @@ Our main application structure currently has unnecessary complexity with nested 
    - Return necessary handlers and state
 
 2. **Update Layout.tsx** to use the new hook:
+
    ```tsx
    const { preferencesOpen, setPreferencesOpen } = useLayoutEventListeners()
    ```
@@ -117,6 +119,7 @@ Our main application structure currently has unnecessary complexity with nested 
 
 4. **Extract layout constants**:
    - Create `src/lib/layout-constants.ts` for panel sizes:
+
      ```tsx
      export const LAYOUT_SIZES = {
        leftSidebar: { default: 20, min: 15, max: 35 },
@@ -180,6 +183,7 @@ Our main application structure currently has unnecessary complexity with nested 
 
 2. **Floating Components Organization**:
    - Create `src/components/layout/FloatingComponents.tsx`:
+
      ```tsx
      export const FloatingComponents = () => (
        <>
@@ -190,6 +194,7 @@ Our main application structure currently has unnecessary complexity with nested 
        </>
      )
      ```
+
    - This declutters Layout.tsx further
 
 3. **Panel State Persistence**:

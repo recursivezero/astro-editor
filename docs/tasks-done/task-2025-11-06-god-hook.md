@@ -1,6 +1,6 @@
 # Refactor: Decompose useLayoutEventListeners god hook
 
-https://github.com/dannysmith/astro-editor/issues/50
+<https://github.com/dannysmith/astro-editor/issues/50>
 
 **Hook:** `src/hooks/useLayoutEventListeners.ts` (451 lines)
 
@@ -243,6 +243,7 @@ Before implementing, verified current state:
 | Hybrid Action Hooks documentation | ✅ Complete | Pattern documented in completed task |
 
 **Current State (post-Task 1):**
+
 - ✅ DOM event polling eliminated entirely
 - ✅ Keyboard shortcuts ready to use `useEditorActions()` directly
 - ✅ Store uses callback delegation pattern correctly
@@ -251,12 +252,14 @@ Before implementing, verified current state:
 ### Pattern Decision: Direct Hook Calls vs Store Delegation
 
 **Current pattern** (lines 69-71 of useLayoutEventListeners):
+
 ```typescript
 const { saveFile } = useEditorStore.getState()
 void saveFile() // Calls store's delegated saveFile
 ```
 
 **Alternative pattern** (Task 2 proposal):
+
 ```typescript
 const { saveFile } = useEditorActions() // Direct hook
 void saveFile() // Direct hook call

@@ -1,6 +1,6 @@
 # Task: Refactor Duplicated File Copying and Processing Logic
 
-https://github.com/dannysmith/astro-editor/issues/41
+<https://github.com/dannysmith/astro-editor/issues/41>
 
 ## Context
 
@@ -51,8 +51,8 @@ This behavioral difference makes sense:
 **Duplicated constants:**
 
 - `IMAGE_EXTENSIONS` array exists in both:
-  - `src/lib/editor/dragdrop/fileProcessing.ts` (as const array with dots: `['.png', '.jpg', ...]`)
-  - `src/components/frontmatter/fields/ImageField.tsx` (as plain array: `['png', 'jpg', ...]`)
+    - `src/lib/editor/dragdrop/fileProcessing.ts` (as const array with dots: `['.png', '.jpg', ...]`)
+    - `src/components/frontmatter/fields/ImageField.tsx` (as plain array: `['png', 'jpg', ...]`)
 
 **Not duplicated (unique to each path):**
 
@@ -264,23 +264,27 @@ After reviewing the actual implementations, the proposed approach is **sound and
 ### Additional Considerations
 
 **Error Handling Strategy:**
+
 - Current code has different error behaviors:
-  - Editor: Silent fallback to original path
-  - ImageField: Toast notification
+    - Editor: Silent fallback to original path
+    - ImageField: Toast notification
 - **Recommendation**: Shared utility should throw errors; let callers handle UI feedback (follows architecture guide's separation of concerns)
 
 **File Type Handling:**
+
 - Both implementations handle images, but the code architecture supports any file type
 - Shared utility should remain file-type agnostic
 - Image-specific logic (validation, markdown image syntax) stays in callers
 
 **Constants Consolidation:**
+
 - `IMAGE_EXTENSIONS` format differs:
-  - Editor: `['.png', '.jpg', ...]` (with dots)
-  - ImageField: `['png', 'jpg', ...]` (without dots)
+    - Editor: `['.png', '.jpg', ...]` (with dots)
+    - ImageField: `['png', 'jpg', ...]` (without dots)
 - **Recommendation**: Export both formats from shared module to avoid breaking changes
 
 **Type Safety:**
+
 - Need clear return types that preserve all necessary information
 - Result should include: `relativePath`, `wasCopied`, original `filename`
 - Consider whether to return errors or throw them (throwing is simpler and more idiomatic)
@@ -321,6 +325,7 @@ export type ImageExtension = (typeof IMAGE_EXTENSIONS)[number]
 ```
 
 **Acceptance Criteria:**
+
 - [ ] File created with both constant formats
 - [ ] TypeScript types exported
 - [ ] No breaking changes to existing code
@@ -364,6 +369,7 @@ export interface ProcessFileToAssetsResult {
 ```
 
 **Acceptance Criteria:**
+
 - [ ] Types defined with comprehensive JSDoc
 - [ ] Import `ProjectSettings` from correct location
 - [ ] All fields documented with examples
@@ -479,6 +485,7 @@ function extractFilename(filePath: string): string {
 ```
 
 **Acceptance Criteria:**
+
 - [ ] Function implements both copy strategies
 - [ ] Uses existing `getEffectiveAssetsDirectory` utility
 - [ ] Calls correct Tauri commands
@@ -501,6 +508,7 @@ export type {
 ```
 
 **Acceptance Criteria:**
+
 - [ ] All public APIs exported
 - [ ] Types exported for consumers
 - [ ] Module is self-contained and testable
@@ -510,6 +518,7 @@ export type {
 **File:** `src/lib/files/fileProcessing.test.ts`
 
 **Test Cases:**
+
 1. ✅ **Always-copy strategy**: Copies file even if in project
 2. ✅ **Only-if-outside-project strategy**: Copies file when outside project
 3. ✅ **Only-if-outside-project strategy**: Reuses path when in project
@@ -524,6 +533,7 @@ export type {
 12. ✅ **Filename extraction**: Handles Windows paths
 
 **Acceptance Criteria:**
+
 - [ ] All test cases pass
 - [ ] Mock Tauri `invoke` calls
 - [ ] Test both copy strategies
@@ -532,6 +542,7 @@ export type {
 - [ ] Achieve >90% code coverage
 
 **Validation Checkpoint:**
+
 - [ ] Run `pnpm run test` - all new tests pass
 - [ ] Run `pnpm run check:all` - no errors
 - [ ] All Phase 1 files created and tested
@@ -548,17 +559,21 @@ export type {
 **File:** `src/lib/editor/dragdrop/fileProcessing.ts`
 
 **Changes:**
+
 1. Remove `IMAGE_EXTENSIONS` constant (lines 10-19)
 2. Import from shared module:
+
    ```typescript
    import {
      processFileToAssets,
      IMAGE_EXTENSIONS_WITH_DOTS,
    } from '../../files'
    ```
+
 3. Update `isImageFile` to use `IMAGE_EXTENSIONS_WITH_DOTS`
 
 **Acceptance Criteria:**
+
 - [ ] Old constant removed
 - [ ] New imports added
 - [ ] `isImageFile` function updated
@@ -567,6 +582,7 @@ export type {
 #### Step 2.2: Refactor `processDroppedFile` function
 
 **Before (lines 77-131):**
+
 ```typescript
 export const processDroppedFile = async (
   filePath: string,
@@ -578,6 +594,7 @@ export const processDroppedFile = async (
 ```
 
 **After:**
+
 ```typescript
 export const processDroppedFile = async (
   filePath: string,
@@ -628,6 +645,7 @@ export const processDroppedFile = async (
 ```
 
 **Acceptance Criteria:**
+
 - [ ] Function uses `processFileToAssets` with `'always'` strategy
 - [ ] Markdown formatting preserved (editor-specific)
 - [ ] Error handling preserved (silent fallback)
@@ -637,6 +655,7 @@ export const processDroppedFile = async (
 #### Step 2.3: Test editor drag-and-drop
 
 **Manual Testing:**
+
 1. Open a collection file
 2. Drag an image from desktop into editor
 3. Verify image is copied to assets directory with date prefix
@@ -647,6 +666,7 @@ export const processDroppedFile = async (
 8. Test error case: drag invalid file path
 
 **Acceptance Criteria:**
+
 - [ ] All manual tests pass
 - [ ] Behavior unchanged from before refactor
 - [ ] Files copied to correct asset directory
@@ -654,6 +674,7 @@ export const processDroppedFile = async (
 - [ ] Error handling works (fallback to original path)
 
 **Validation Checkpoint:**
+
 - [ ] Run `pnpm run test` - all tests pass
 - [ ] Run `pnpm run check:all` - no errors
 - [ ] Manual testing complete
@@ -670,14 +691,18 @@ export const processDroppedFile = async (
 **File:** `src/components/frontmatter/fields/ImageField.tsx`
 
 **Changes:**
+
 1. Remove `IMAGE_EXTENSIONS` constant (lines 25-34)
 2. Import from shared module:
+
    ```typescript
    import { IMAGE_EXTENSIONS, processFileToAssets } from '../../../lib/files'
    ```
+
 3. Update `FileUploadButton` to use imported constant (line 237)
 
 **Acceptance Criteria:**
+
 - [ ] Old constant removed
 - [ ] New imports added
 - [ ] `FileUploadButton` uses imported constant
@@ -686,6 +711,7 @@ export const processDroppedFile = async (
 #### Step 3.2: Refactor `handleFileSelect` function
 
 **Before (lines 52-129):**
+
 ```typescript
 const handleFileSelect = async (filePath: string) => {
   // 75+ lines of inline file processing
@@ -693,6 +719,7 @@ const handleFileSelect = async (filePath: string) => {
 ```
 
 **After:**
+
 ```typescript
 const handleFileSelect = async (filePath: string) => {
   setIsLoading(true)
@@ -737,6 +764,7 @@ const handleFileSelect = async (filePath: string) => {
 ```
 
 **Acceptance Criteria:**
+
 - [ ] Function uses `processFileToAssets` with `'only-if-outside-project'` strategy
 - [ ] Toast notification preserved (component-specific)
 - [ ] Error handling preserved
@@ -746,6 +774,7 @@ const handleFileSelect = async (filePath: string) => {
 #### Step 3.3: Test ImageField
 
 **Manual Testing:**
+
 1. Open a collection file with image field in schema
 2. Upload an image from desktop (outside project)
 3. Verify image is copied to assets directory
@@ -758,6 +787,7 @@ const handleFileSelect = async (filePath: string) => {
 10. Verify error toast shows
 
 **Acceptance Criteria:**
+
 - [ ] All manual tests pass
 - [ ] Files outside project are copied
 - [ ] Files inside project reuse existing path
@@ -766,6 +796,7 @@ const handleFileSelect = async (filePath: string) => {
 - [ ] Error toast displays on failure
 
 **Validation Checkpoint:**
+
 - [ ] Run `pnpm run test` - all tests pass
 - [ ] Run `pnpm run check:all` - no errors
 - [ ] Manual testing complete
@@ -780,12 +811,14 @@ const handleFileSelect = async (filePath: string) => {
 #### Step 4.1: Verify no unused code remains
 
 **Check:**
+
 - [ ] `IMAGE_EXTENSIONS` only exists in `src/lib/files/constants.ts`
 - [ ] No duplicated file copying logic remains
 - [ ] Both implementations use shared utility
 - [ ] Helper functions (`extractFilename`) removed from original locations if now unused
 
 **Acceptance Criteria:**
+
 - [ ] Grep for `IMAGE_EXTENSIONS` - only in shared module and tests
 - [ ] Grep for `copy_file_to_assets` - only in shared utility
 - [ ] Grep for `is_path_in_project` - only in shared utility
@@ -799,6 +832,7 @@ pnpm run check:all
 ```
 
 **Acceptance Criteria:**
+
 - [ ] All tests pass (unit + integration)
 - [ ] No TypeScript errors
 - [ ] No ESLint errors
@@ -819,6 +853,7 @@ pnpm run check:all
    - Add example of when to use `processFileToAssets`
 
 **Acceptance Criteria:**
+
 - [ ] Task file updated with completion status
 - [ ] Architecture guide documents new pattern
 - [ ] Code examples added to guide
@@ -826,6 +861,7 @@ pnpm run check:all
 #### Step 4.4: Final validation
 
 **Full System Test:**
+
 1. ✅ Editor drag-and-drop: Images from desktop
 2. ✅ Editor drag-and-drop: Images from project
 3. ✅ Editor drag-and-drop: Non-image files
@@ -836,6 +872,7 @@ pnpm run check:all
 8. ✅ Error cases: Invalid paths, no permissions
 
 **Acceptance Criteria:**
+
 - [ ] All behaviors match pre-refactor functionality
 - [ ] No performance regressions
 - [ ] Error handling works correctly
@@ -861,12 +898,14 @@ After refactoring:
 ## Risk Mitigation
 
 **Risks identified:**
+
 1. **Breaking drag-and-drop**: Mitigated by Phase 2 testing before Phase 3
 2. **Breaking ImageField**: Mitigated by preserving exact behavior with `'only-if-outside-project'`
 3. **Error handling changes**: Mitigated by preserving UI-specific error handling in callers
 4. **Performance regression**: Mitigated by using same Tauri commands, no new overhead
 
 **Rollback plan:**
+
 - Each phase is independent and can be rolled back via git
 - If Phase 2 fails validation, Phase 1 changes are harmless (unused code)
 - If Phase 3 fails validation, Phase 2 can remain (partial improvement)
@@ -874,12 +913,14 @@ After refactoring:
 ## Implementation Notes
 
 **Estimated effort:** 3-4 hours
+
 - Phase 1: 1.5 hours (infrastructure + tests)
 - Phase 2: 0.5 hours (refactor editor)
 - Phase 3: 0.5 hours (refactor ImageField)
 - Phase 4: 1 hour (cleanup + docs + validation)
 
 **Key principles to follow:**
+
 - ✅ Read all files before editing (architecture guide)
 - ✅ Test each phase before proceeding
 - ✅ Preserve exact existing behavior
@@ -897,6 +938,7 @@ After refactoring:
 ### Phase 1: Shared Infrastructure ✅
 
 **Files Created:**
+
 - `src/lib/files/constants.ts` - IMAGE_EXTENSIONS in two formats
 - `src/lib/files/types.ts` - TypeScript interfaces for options and results
 - `src/lib/files/fileProcessing.ts` - Core `processFileToAssets()` function
@@ -904,6 +946,7 @@ After refactoring:
 - `src/lib/files/fileProcessing.test.ts` - 17 comprehensive tests
 
 **Key Features:**
+
 - `copyStrategy` option supporting 'always' and 'only-if-outside-project'
 - Path normalization with leading slash
 - Uses existing `getEffectiveAssetsDirectory` for path resolution
@@ -913,11 +956,13 @@ After refactoring:
 ### Phase 2: Editor Drag-and-Drop Refactor ✅
 
 **Files Modified:**
+
 - `src/lib/editor/dragdrop/fileProcessing.ts` - Refactored to use shared utility
 - `src/lib/editor/urls/detection.ts` - Updated to use shared constants
 - `src/lib/editor/dragdrop/fileProcessing.test.ts` - Updated 28 tests
 
 **Changes:**
+
 - Removed duplicated `IMAGE_EXTENSIONS` constant
 - Removed ~50 lines of inline file processing logic
 - `processDroppedFile()` now uses `processFileToAssets` with `'always'` strategy
@@ -927,9 +972,11 @@ After refactoring:
 ### Phase 3: ImageField Refactor ✅
 
 **Files Modified:**
+
 - `src/components/frontmatter/fields/ImageField.tsx` - Refactored to use shared utility
 
 **Changes:**
+
 - Removed duplicated `IMAGE_EXTENSIONS` constant
 - Removed ~75 lines of inline file processing logic
 - `handleFileSelect()` now uses `processFileToAssets` with `'only-if-outside-project'` strategy
@@ -940,12 +987,14 @@ After refactoring:
 ### Total Impact
 
 **Code Reduction:**
+
 - Removed ~125+ lines of duplicated code
 - Created 1 shared module (4 files, ~100 lines)
 - Net reduction: ~25+ lines
 - Massive improvement in maintainability
 
 **Test Coverage:**
+
 - Added 17 new tests for shared utility
 - Updated 28 existing tests
 - All 475 frontend tests passing
@@ -953,6 +1002,7 @@ After refactoring:
 - Zero regressions
 
 **Benefits:**
+
 - Single source of truth for file copying logic
 - Changes only need to happen in one place
 - Configurable behavior via strategy pattern

@@ -24,6 +24,7 @@ The application has three critical performance issues causing unnecessary re-ren
 ## Context & Architecture Alignment
 
 These issues violate patterns documented in:
+
 - `docs/developer/performance-guide.md` (lines 96-130): Store Subscription Optimization
 - `docs/developer/architecture-guide.md` (lines 240-271): The getState() Pattern
 
@@ -47,6 +48,7 @@ When the frontmatter object is replaced (whether from user typing OR external fi
 ### Phase 1: Field Component Optimization (Priority 1 - Highest Impact)
 
 **Affected Components:**
+
 - `src/components/frontmatter/fields/StringField.tsx:24`
 - `src/components/frontmatter/fields/DateField.tsx:19`
 - `src/components/frontmatter/fields/ArrayField.tsx:20`
@@ -130,6 +132,7 @@ export const getNestedValue = (obj: any, path: string): any => {
 **File:** `src/components/layout/StatusBar.tsx:7`
 
 **Current Implementation:**
+
 ```typescript
 // ❌ BAD - Re-renders on every keystroke
 const { currentFile, editorContent, isDirty } = useEditorStore()
@@ -141,6 +144,7 @@ const charCount = editorContent.length
 ```
 
 **Optimized Implementation:**
+
 ```typescript
 // ✅ GOOD - Debounced calculation
 const currentFile = useEditorStore(state => state.currentFile)
@@ -179,6 +183,7 @@ return (
 **File:** `src/components/frontmatter/fields/FrontmatterField.tsx:29`
 
 **Current Implementation:**
+
 ```typescript
 // ❌ BAD - Subscribes to entire frontmatter object
 const { frontmatter } = useEditorStore()
@@ -193,6 +198,7 @@ const shouldUseArrayField = !isArrayReference &&
 ```
 
 **Optimized Implementation:**
+
 ```typescript
 // ✅ GOOD - Only subscribe to specific field
 const fieldValue = useEditorStore(state => state.frontmatter?.[name])
@@ -218,6 +224,7 @@ const shouldUseArrayField = useMemo(() => {
 ### Unit Testing
 
 For each updated component, verify:
+
 - Component only re-renders when its specific field value changes
 - External file changes (simulated) still trigger appropriate re-renders
 - No TypeScript errors
@@ -258,6 +265,7 @@ For each updated component, verify:
 ### Incremental Approach
 
 **Start with Phase 1, Steps 1-2 (proof of concept)**:
+
 - Implement selector pattern in `StringField` and `DateField`
 - Measure impact with React DevTools Profiler
 - Validate approach before continuing
@@ -267,6 +275,7 @@ If POC is successful and shows clear improvement, proceed with remaining compone
 ### Potential Edge Cases
 
 1. **Complex field values**: Fields with array/object values might need `shallow` comparison
+
    ```typescript
    import { shallow } from 'zustand/shallow'
    const value = useEditorStore(
@@ -276,6 +285,7 @@ If POC is successful and shows clear improvement, proceed with remaining compone
    ```
 
 2. **Multi-value dependencies**: If a field needs multiple frontmatter values:
+
    ```typescript
    const title = useEditorStore(state => state.frontmatter.title)
    const slug = useEditorStore(state => state.frontmatter.slug)
@@ -305,6 +315,7 @@ If POC is successful and shows clear improvement, proceed with remaining compone
 ## Estimated Effort
 
 **Total**: 4-6 hours
+
 - Phase 1 (POC): 1-2 hours
 - Phase 1 (Full): 2-3 hours
 - Phase 2: 30 minutes

@@ -3,6 +3,7 @@
 ## Overview
 
 Add tests for critical data flows and improve test organization. This task addresses:
+
 1. **Schema parsing** (0% coverage, single point of failure)
 2. **File workflow integration** (query → store → editor data flows)
 3. **Test file organization** (split monolithic test files)
@@ -11,6 +12,7 @@ Add tests for critical data flows and improve test organization. This task addre
 **Total Time:** 1-2 weeks
 
 **Why This Matters:**
+
 - Schema parsing is a critical path with no test coverage
 - File workflows are the core user journey
 - Better test organization improves maintainability
@@ -210,6 +212,7 @@ Now that Task 1 extracted these utilities, add comprehensive test coverage:
 #### A. Object Utilities (`src/lib/object-utils.test.ts`)
 
 Created in Task 1, Item 2.1. See original task for test cases:
+
 - `setNestedValue` - nested paths, arrays, prototype pollution
 - `getNestedValue` - missing paths, arrays
 - `deleteNestedValue` - nested deletion, empty parent cleanup
@@ -217,6 +220,7 @@ Created in Task 1, Item 2.1. See original task for test cases:
 #### B. File Filtering (`src/lib/files/filtering.test.ts`)
 
 Created in Task 1, Item 2.2. Test cases:
+
 - Show all files when `showDrafts` is true
 - Filter drafts when `showDrafts` is false
 - Handle missing draft mapping
@@ -225,6 +229,7 @@ Created in Task 1, Item 2.2. Test cases:
 #### C. File Sorting (`src/lib/files/sorting.test.ts`)
 
 Created in Task 1, Item 2.2. Test cases:
+
 - Sort by date, newest first
 - Files without dates go to bottom
 - Handle invalid dates
@@ -258,12 +263,14 @@ Created in Task 1, Item 2.2. Test cases:
 Split by feature/concern and extract shared setup:
 
 **For FrontmatterPanel.test.tsx (552 lines):**
+
 - `FrontmatterPanel.rendering.test.tsx` - Display and layout tests
 - `FrontmatterPanel.validation.test.tsx` - Field validation tests
 - `FrontmatterPanel.interactions.test.tsx` - User interaction tests
 - `FrontmatterPanel.test-helpers.ts` - Shared setup utilities
 
 **For migrations.test.ts (452 lines):**
+
 - `migrations.v1-to-v2.test.ts` - Version 1 to 2 migration tests
 - `migrations.v2-to-v3.test.ts` - Version 2 to 3 migration tests
 - `migrations.helpers.test.ts` - Shared migration utilities
@@ -277,6 +284,7 @@ Split by feature/concern and extract shared setup:
    - Decide on split strategy
 
 2. **Create shared test helpers:**
+
    ```typescript
    // FrontmatterPanel.test-helpers.ts
    export function createMockSchema() {
@@ -319,6 +327,7 @@ Split by feature/concern and extract shared setup:
 ### Testing Strategy
 
 **Before splitting:**
+
 ```bash
 # Run tests and capture output
 pnpm test FrontmatterPanel > before.txt
@@ -326,6 +335,7 @@ pnpm test migrations > before-migrations.txt
 ```
 
 **After splitting:**
+
 ```bash
 # Run all split test files
 pnpm test FrontmatterPanel > after.txt
@@ -337,6 +347,7 @@ diff before-migrations.txt after-migrations.txt
 ```
 
 **Verification checklist:**
+
 - [ ] All tests from original file are present in split files
 - [ ] Test count matches (check test runner output)
 - [ ] Coverage reports show same coverage %
@@ -358,6 +369,7 @@ diff before-migrations.txt after-migrations.txt
 1. `FrontmatterPanel.test.tsx` (552 lines) - High usage, complex component
 2. `migrations.test.ts` (452 lines) - Clear version-based split
 3. Any other test files >300 lines (find with):
+
    ```bash
    find src -name "*.test.ts*" -exec wc -l {} + | sort -rn | head -20
    ```
@@ -438,17 +450,21 @@ pnpm run check:all
 ## Key Files Reference
 
 **Test utilities:**
+
 - `src/test/mocks/` - Tauri mocks, toast mocks
 
 **Example patterns:**
+
 - `src/store/__tests__/editorStore.integration.test.ts` - Integration test setup
 - `src/lib/editor/markdown/formatting.test.ts` - Pure function tests
 - `src/lib/editor/paste/handlers.test.ts` - Error handling tests
 
 **Types:**
+
 - `src/types/index.ts` - FileEntry, MarkdownContent, etc.
 
 **Testing Commands:**
+
 ```bash
 # Run tests in watch mode while developing
 pnpm run test

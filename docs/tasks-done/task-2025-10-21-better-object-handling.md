@@ -1,6 +1,6 @@
 # Task: Better Object Handling
 
-https://github.com/dannysmith/astro-editor/issues/36
+<https://github.com/dannysmith/astro-editor/issues/36>
 
 It appears as if objects in content types aren't handled properly in the UI. As you can see here, the UI is asking me to "Enter crafting…" with a freeform text field, and then the individual properties below it.
 
@@ -65,6 +65,7 @@ And then when I've done that, we can look at putting together a plan to implemen
 
 **✅ Schema Updated** (`test/dummy-astro-project/src/content.config.ts:45-50`)
 Added a `metadata` object field to the `notes` collection:
+
 ```typescript
 metadata: z.object({
   category: z.string(),           // required
@@ -79,17 +80,21 @@ Created a note with object field frontmatter to test the UI behavior.
 ### Astro Content Collections: Objects vs References
 
 #### Object Fields (`z.object()`)
+
 - **Purpose**: Define inline nested data structures directly within an entry
 - **Schema Example**: `image: z.object({ src: z.string(), alt: z.string() })`
 - **Frontmatter Representation**:
+
   ```yaml
   image:
     src: /path/to/image.jpg
     alt: Description here
   ```
+
 - **Use Case**: When you want to store structured data that belongs to this specific entry
 
 #### Reference Fields (`reference()`)
+
 - **Purpose**: Establish relationships between collection entries
 - **Schema Example**: `author: reference('authors')`
 - **Data Representation**: Stores `{collection: "authors", id: "ben-holmes"}` rather than embedding data
@@ -121,6 +126,7 @@ if field_type_info.field_type == "unknown"
 ```
 
 **Result**: Object properties are parsed into individual `SchemaField` entries with:
+
 - `name`: Flattened path using dot notation (e.g., `"metadata.category"`)
 - `is_nested`: `Some(true)` to indicate this is a nested field
 - `parent_path`: Parent object's path (e.g., `"metadata"`)
@@ -128,12 +134,14 @@ if field_type_info.field_type == "unknown"
 #### Frontend State Management (`src/store/editorStore.ts`)
 
 **✅ Nested value handling exists**:
+
 1. `setNestedValue()` (lines 14-71): Creates nested objects using dot notation
 2. `getNestedValue()` (lines 77-95): Reads nested values using dot notation
 3. `deleteNestedValue()` (lines 101-173): Deletes nested values and cleans up empty parents
 4. `updateFrontmatterField()` (lines 434-454): Uses these helpers for all field updates
 
 **Example**: When updating `metadata.category`, it automatically creates/updates:
+
 ```typescript
 frontmatter: {
   metadata: {
@@ -197,6 +205,7 @@ From `test/dummy-astro-project/.astro/collections/notes.schema.json:46-76`:
 ```
 
 This schema is correctly parsed by the backend's `parse_field` function which:
+
 1. Detects `type: "object"` with `properties`
 2. Recursively parses each property
 3. Returns flattened fields: `metadata.category`, `metadata.priority`, `metadata.deadline`
@@ -214,10 +223,12 @@ This schema is correctly parsed by the backend's `parse_field` function which:
 ### The Original Issue
 
 Looking at the GitHub issue screenshot, the problem shows:
+
 1. A text input for "Enter crafting..." (the object itself)
 2. Individual fields below it for each property
 
 This suggests the implementation **may have been recently added** (based on system reminders showing file modifications). The current codebase should now:
+
 - ✅ NOT show an input for the object itself
 - ✅ Group nested fields visually under a header
 - ✅ Show proper indentation with a left border
@@ -239,6 +250,7 @@ This suggests the implementation **may have been recently added** (based on syst
 ### Next Steps for User
 
 **To verify the fix**:
+
 1. Open the Astro Editor with the test dummy project
 2. Open the test file `2024-03-15-object-field-test.md`
 3. Check the frontmatter panel to see if:
@@ -248,6 +260,7 @@ This suggests the implementation **may have been recently added** (based on syst
 4. Try editing the nested fields and verify they save correctly
 
 **If issues remain**, they are likely:
+
 - Visual design preferences (fieldset vs current design)
 - Field ordering within objects
 - Edge cases with deep nesting
@@ -300,6 +313,7 @@ return Ok(FieldTypeInfo {
 Added regression test `test_parse_nested_object_with_additional_properties_false()` in `src-tauri/src/schema_merger.rs:997-1055` to prevent this bug from recurring.
 
 **Test verifies:**
+
 - Objects with `additionalProperties: false` are flattened into individual fields
 - Fields have correct `parent_path` and `is_nested` markers
 - NO field is created for the object itself

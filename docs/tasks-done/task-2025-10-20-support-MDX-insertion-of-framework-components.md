@@ -22,6 +22,7 @@ The current system provides a two-step insertion flow:
 5. **Insertion**: Generates JSX snippet with tab stops and inserts at cursor
 
 **Key Technical Facts:**
+
 - Backend: `scan_mdx_components` Rust command (mdx_components.rs:35-95)
 - Prop parsing: TypeScript AST via SWC parser (mdx_components.rs:146-172)
 - **Subdirectories already supported** ✓ - recursive `WalkDir` with no depth limit
@@ -46,6 +47,7 @@ This means no changes needed to `snippet-builder.ts` or `insertSnippet.ts`.
 Each framework defines component props differently:
 
 ### Astro (.astro) - Current Implementation ✓
+
 ```astro
 ---
 interface Props {
@@ -58,6 +60,7 @@ interface Props {
 ```
 
 ### React/Preact (.tsx, .jsx)
+
 ```typescript
 // Pattern 1: Inline types (most common)
 function Button({ variant, size }: {
@@ -79,6 +82,7 @@ const Button: React.FC<ButtonProps> = ({ variant, size }) => { ... }
 **Implementation Decision**: Parse common patterns only (inline types, simple interfaces). Skip complex patterns like `React.ComponentProps<'div'> & VariantProps<...>` for MVP.
 
 ### Vue (.vue)
+
 ```vue
 <script setup lang="ts">
 // Composition API (modern)
@@ -97,6 +101,7 @@ const props = defineProps<{
 **Implementation Decision**: Support Composition API `defineProps<{...}>()` pattern. Options API can be added later if needed.
 
 ### Svelte (.svelte)
+
 ```svelte
 <script lang="ts">
   export let variant: 'info' | 'warning'
@@ -167,6 +172,7 @@ pub struct MdxComponent {
 #### 1.4 Implement Framework-Specific Parsers
 
 **Main dispatcher** (modify `scan_mdx_components`):
+
 ```rust
 let framework = detect_framework(&path);
 let component = match framework {
@@ -206,6 +212,7 @@ let component = match framework {
    - If parsing fails: Return component with empty props array
 
 **Graceful Degradation Strategy**: If any parser fails (malformed component, unsupported pattern), return the component with:
+
 - Extracted name from filename
 - Empty props array (`[]`)
 - `has_slot: false`
@@ -338,8 +345,8 @@ const frameworkColors = {
 
 - **Astro**: Check for `<slot />` in markup (current implementation ✓)
 - **React/Preact/SolidJS**: Check for `children` prop in type definition
-  - Standard React pattern: `children?: ReactNode`
-  - Alternative: `children?: JSX.Element`
+    - Standard React pattern: `children?: ReactNode`
+    - Alternative: `children?: JSX.Element`
 - **Vue**: Check for `<slot>` or `<slot />` in `<template>` section
 - **Svelte**: Check for `<slot>` or `<slot />` in markup
 
@@ -405,6 +412,7 @@ mod tests {
 #### Integration Testing
 
 Manual testing with real Astro project:
+
 1. Create test fixtures: `src/components/mdx/test/Button.tsx`, `Alert.vue`, `Card.svelte`
 2. Open project in Astro Editor
 3. Open MDX file, press Cmd+/
@@ -416,6 +424,7 @@ Manual testing with real Astro project:
 ### Implementation Order
 
 **Week 1-2: React Support**
+
 1. Add framework detection enum and file filtering
 2. Implement `parse_react_component()` for inline types and simple interfaces
 3. Add unit tests for React parser
@@ -423,11 +432,13 @@ Manual testing with real Astro project:
 5. Test with real React components
 
 **Week 3: Vue Support**
+
 1. Implement `parse_vue_component()` for Composition API
 2. Add unit tests for Vue parser
 3. Test with real Vue components
 
 **Week 4: Svelte Support + UI Polish**
+
 1. Implement `parse_svelte_component()`
 2. Add unit tests for Svelte parser
 3. Add framework badges to UI
@@ -438,7 +449,7 @@ Manual testing with real Astro project:
 
 ### Data Flow
 
-```
+```text
 User presses Cmd+/ in MDX file
        ↓
 ComponentBuilderDialog opens
@@ -482,34 +493,42 @@ insertSnippet() inserts into CodeMirror editor
 ## Risks & Mitigation
 
 ### Risk 1: Parser Complexity
+
 **Impact**: Parsers may not handle all prop patterns correctly
 
 **Mitigation**:
+
 - Start with common patterns only (80% coverage)
 - Graceful degradation: Show component with empty props if parsing fails
 - Users can still insert and manually add props
 - Comprehensive test suite for supported patterns
 
 ### Risk 2: Framework API Changes
+
 **Impact**: Future framework versions may change prop definition syntax
 
 **Mitigation**:
+
 - Document supported patterns in user-facing docs
 - Parser updates can be released independently
 - Users can report unsupported patterns as enhancement requests
 
 ### Risk 3: Performance with Large Libraries
+
 **Impact**: Scanning 100+ components could be slow
 
 **Mitigation**:
+
 - Existing 5-minute cache handles this
 - File watcher ensures fresh data without re-scanning
 - Can add lazy parsing if needed (unlikely)
 
 ### Risk 4: False Negatives in Prop Detection
+
 **Impact**: Parser might miss props or get types wrong
 
 **Mitigation**:
+
 - Test with real-world components (shadcn/ui, popular libraries)
 - Show "No props detected" for failed parsing
 - User can still insert component manually
@@ -518,6 +537,7 @@ insertSnippet() inserts into CodeMirror editor
 ## Success Criteria
 
 ### Must Have ✓
+
 - [x] React/TSX components (.tsx, .jsx) appear in component list
 - [x] Vue components (.vue) appear in component list
 - [x] Svelte components (.svelte) appear in component list
@@ -530,11 +550,13 @@ insertSnippet() inserts into CodeMirror editor
 - [x] Graceful degradation: Components with parsing errors shown with "No props detected"
 
 ### Should Have
+
 - [x] Comprehensive test coverage for all parsers
 - [ ] Documentation of supported prop patterns per framework
 - [ ] User feedback mechanism for unsupported patterns
 
 ### Nice to Have
+
 - [ ] Colored framework badges (currently optional in implementation - can add colored variants)
 - [ ] Support for complex TypeScript patterns (intersection types, React.ComponentProps)
 - [ ] Options API support for Vue
@@ -544,6 +566,7 @@ insertSnippet() inserts into CodeMirror editor
 ## Code Estimate
 
 **Rust Backend**:
+
 - Framework detection: ~30 lines
 - React parser: ~100-120 lines
 - Vue parser: ~80-100 lines
@@ -552,6 +575,7 @@ insertSnippet() inserts into CodeMirror editor
 - **Total**: ~500-650 lines
 
 **TypeScript Frontend**:
+
 - Interface update: ~5 lines
 - FrameworkIcon component: ~60 lines (inline SVGs)
 - Badge UI updates: ~20-25 lines
@@ -562,16 +586,19 @@ insertSnippet() inserts into CodeMirror editor
 ## Files to Modify
 
 ### Backend (Rust)
+
 - `src-tauri/src/commands/mdx_components.rs` - Main implementation
 - `src-tauri/src/models/mdx_component.rs` - Add framework field
 - `src-tauri/Cargo.toml` - Ensure SWC dependencies (likely no change needed)
 
 ### Frontend (TypeScript)
+
 - `src/hooks/queries/useMdxComponentsQuery.ts` - Update interface
 - `src/components/icons/FrameworkIcon.tsx` - New file with inline SVG icons (reusable)
 - `src/components/component-builder/ComponentBuilderDialog.tsx` - Import and use FrameworkIcon in badges
 
 ### Tests
+
 - `src-tauri/src/commands/mdx_components.rs` - Comprehensive unit tests
 
 ## Next Steps

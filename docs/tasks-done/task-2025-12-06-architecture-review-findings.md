@@ -15,7 +15,7 @@ This document contains actionable implementation details for 8 tasks identified 
 3. Consolidate Logging (7): Requires audit and documentation update
 4. Remove Typewriter Mode (8): Multi-file removal, do last
 
-## Instructions for Claude Code doing this work!
+## Instructions for Claude Code doing this work
 
 - Do each task in order, one at a time.
 - After completing a task:

@@ -1,9 +1,11 @@
 # Task 1: Add Intel Build Support
 
 ## Status
+
 🧪 IN TESTING - v0.1.26 draft release (branch: add-intel-build)
 
 ## Context
+
 Currently building only Apple Silicon (ARM) DMG. Need to support Intel-based Macs as well.
 
 ## Requirements
@@ -25,10 +27,12 @@ Currently building only Apple Silicon (ARM) DMG. Need to support Intel-based Mac
    - Single DMG containing both Intel (x86_64) and ARM (aarch64) executables
    - Built using: `--target universal-apple-darwin`
    - Requires both Rust targets installed:
+
      ```bash
      rustup target add aarch64-apple-darwin
      rustup target add x86_64-apple-darwin
      ```
+
    - File size: ~2x larger (includes both architectures)
    - User experience: Single download, works on both architectures
    - Best practice for 2025: macOS 26 (Tahoe) is last Intel version, but Universal is still recommended
@@ -41,6 +45,7 @@ Currently building only Apple Silicon (ARM) DMG. Need to support Intel-based Mac
    - More complex updater configuration
 
 **Tauri v2 Support:**
+
 - Universal binary support confirmed via `universal-apple-darwin` target
 - Must use proper npm syntax: `npm run tauri build -- --target universal-apple-darwin`
 - The `--` delimiter is critical for passing flags to tauri-cli
@@ -49,6 +54,7 @@ Currently building only Apple Silicon (ARM) DMG. Need to support Intel-based Mac
 ### GitHub Actions Matrix Strategy
 
 **For Separate Builds:**
+
 ```yaml
 strategy:
   matrix:
@@ -58,11 +64,13 @@ strategy:
       - platform: 'macos-latest'
         args: '--target x86_64-apple-darwin'
 ```
+
 - Creates two parallel jobs
 - Each produces architecture-specific artifacts
 - Tauri-action automatically generates correct latest.json entries
 
 **For Universal Binary:**
+
 ```yaml
 strategy:
   matrix:
@@ -70,6 +78,7 @@ strategy:
       - platform: 'macos-14' # ARM runner
         args: '--target universal-apple-darwin'
 ```
+
 - Single job produces universal binary
 - Must install both Rust targets on runner
 - Use `updaterJsonKeepUniversal: true` in tauri-action
@@ -78,11 +87,13 @@ strategy:
 ### Auto-Updater Architecture Detection
 
 **How It Works:**
+
 - Tauri automatically detects user's architecture at runtime
 - Uses `{{arch}}` variable that resolves to: `x86_64`, `i686`, `aarch64`, or `armv7`
 - Matches against platform keys in latest.json
 
 **JSON Structure for Separate Builds:**
+
 ```json
 {
   "platforms": {
@@ -99,6 +110,7 @@ strategy:
 ```
 
 **JSON Structure for Universal Binary:**
+
 ```json
 {
   "platforms": {
@@ -119,6 +131,7 @@ strategy:
 ```
 
 **Tauri-Action Configuration:**
+
 - `includeUpdaterJson: true` - Enables auto-updater JSON generation (default)
 - `updaterJsonKeepUniversal: true` - Adds darwin-universal entry and populates both architecture-specific entries with universal binary
 - Automatic architecture detection ensures correct download
@@ -132,6 +145,7 @@ This is the simplest and most user-friendly approach. Single DMG works on all Ma
 #### Step 1: Update release.yml
 
 **Changes needed:**
+
 1. Add both Rust targets installation step (before build step)
 2. Change args from `'--bundles app,dmg'` to `'--target universal-apple-darwin --bundles app,dmg'`
 3. Add `updaterJsonKeepUniversal: true` to tauri-action configuration
@@ -170,6 +184,7 @@ This is the simplest and most user-friendly approach. Single DMG works on all Ma
 #### Step 3: Update website
 
 **Changes needed:**
+
 1. Update download button text to indicate "Universal (Intel & Apple Silicon)"
 2. Single download button serves all users
 
@@ -188,6 +203,7 @@ This is the simplest and most user-friendly approach. Single DMG works on all Ma
 #### Step 5: Update Documentation
 
 **Files to update:**
+
 1. `docs/release-process.md`:
    - Add note about universal binary build
    - Update artifact list to show `Astro Editor_0.1.X_universal.dmg`
@@ -240,6 +256,7 @@ strategy:
 #### Step 3: Update website
 
 Add two download buttons:
+
 ```html
 <a href="astro-editor-latest-arm.dmg">Download for Apple Silicon (M1/M2/M3)</a>
 <a href="astro-editor-latest-intel.dmg">Download for Intel Mac</a>
@@ -250,6 +267,7 @@ Add two download buttons:
 ### `.github/workflows/release.yml`
 
 **1. Added Rust Targets Installation (after line 55)**
+
 ```yaml
 - name: Install Rust targets for universal binary
   if: matrix.platform == 'macos-14'
@@ -257,11 +275,13 @@ Add two download buttons:
     rustup target add aarch64-apple-darwin
     rustup target add x86_64-apple-darwin
 ```
+
 - **Location**: After "Install frontend dependencies" step
 - **Purpose**: Installs both ARM and Intel Rust toolchains required for universal binary
 - **Safe**: Doesn't touch any signing or notarization configuration
 
 **2. Updated Matrix Args (line 27)**
+
 ```yaml
 # BEFORE:
 args: '--bundles app,dmg'
@@ -269,19 +289,23 @@ args: '--bundles app,dmg'
 # AFTER:
 args: '--target universal-apple-darwin --bundles app,dmg'
 ```
+
 - **Purpose**: Tells Tauri to build a universal binary instead of architecture-specific
 - **Impact**: Single build creates both ARM and Intel executables in one DMG
 
 **3. Added updaterJsonKeepUniversal (line 108)**
+
 ```yaml
 includeUpdaterJson: true
 updaterJsonKeepUniversal: true  # NEW
 args: ${{ matrix.args }}
 ```
+
 - **Purpose**: Generates latest.json with darwin-universal, darwin-aarch64, and darwin-x86_64 entries
 - **Critical**: Ensures existing ARM users and new Intel users can both find the update
 
 **4. Updated Release Body (line 102)**
+
 ```yaml
 # BEFORE:
 - **macOS**: Download the `.dmg` file and drag Astro Editor to the Applications folder.
@@ -289,11 +313,13 @@ args: ${{ matrix.args }}
 # AFTER:
 - **macOS**: Download the `.dmg` file (Universal - works on both Intel and Apple Silicon) and drag Astro Editor to the Applications folder.
 ```
+
 - **Purpose**: Clearly communicates that single DMG works on all Macs
 
 ### `website/index.html`
 
 **Updated Download Button (line 310-336)**
+
 ```html
 <!-- BEFORE: Single line text -->
 <span>Download for macOS</span>
@@ -304,12 +330,14 @@ args: ${{ matrix.args }}
   <span class="text-xs text-white/70 font-normal">Universal (Intel & Apple Silicon)</span>
 </div>
 ```
+
 - **Purpose**: Clearly communicates universal binary support to users
 - **Also updated**: aria-label for accessibility
 
 ### What Stays the Same (Critical!)
 
 **✅ All signing configuration unchanged:**
+
 - `APPLE_SIGNING_IDENTITY` - Same
 - Certificate import step - Unchanged
 - API key creation - Unchanged
@@ -317,28 +345,33 @@ args: ${{ matrix.args }}
 - Notarization config - Unchanged
 
 **✅ DMG copy step unchanged:**
+
 - Uses `find` to locate any .dmg file
 - Works with both "aarch64" and "universal" filenames automatically
 
 **✅ No changes needed to:**
+
 - `prepare-release.js` - Versioning works the same (see Testing Notes for branch handling)
 - `deploy-website.yml` - Already copies DMG correctly
 
 ### Auto-Updater Behavior
 
 **Existing v0.1.25 users (ARM only):**
+
 - App checks: `https://github.com/dannysmith/astro-editor/releases/latest/download/latest.json`
 - Finds: `darwin-aarch64` entry pointing to universal DMG
 - Downloads: Universal DMG (works perfectly)
 - Result: Seamless upgrade ✅
 
 **New Intel users:**
+
 - App checks: Same latest.json URL
 - Finds: `darwin-x86_64` entry pointing to same universal DMG
 - Downloads: Universal DMG (works perfectly)
 - Result: Intel support ✅
 
 **File size change:**
+
 - Current: 6.2MB (ARM only)
 - Expected: ~12-13MB (Universal)
 - Impact: Acceptable for better compatibility
@@ -396,6 +429,7 @@ The only reason to use separate builds would be if the universal binary size bec
 This allows testing the changes in isolation without affecting the main branch until verified.
 
 **Why this works:**
+
 1. Tag triggers workflow (not branch)
 2. Workflow checks out the **tag** (which points to branch commit)
 3. Builds the code from the tag regardless of which branch it was created on
@@ -422,6 +456,7 @@ git push origin add-intel-build --tags
 ### Test Verification Checklist
 
 **1. Draft Release Verification (GitHub Releases page):**
+
 - [ ] DMG filename includes "universal" (e.g., `Astro Editor_0.1.26_universal.dmg`)
 - [ ] File size is approximately 12-13MB (double the current 6.2MB)
 - [ ] `.sig` signature file present
@@ -429,6 +464,7 @@ git push origin add-intel-build --tags
 - [ ] Release is marked as "Draft"
 
 **2. latest.json Verification:**
+
 - [ ] Download latest.json from release assets
 - [ ] Verify contains `darwin-universal` entry
 - [ ] Verify contains `darwin-aarch64` entry (for existing ARM users)
@@ -437,6 +473,7 @@ git push origin add-intel-build --tags
 - [ ] Signatures present for all three entries
 
 **3. DMG Installation Testing (on test Mac):**
+
 - [ ] Download universal DMG from draft release
 - [ ] Install on Mac
 - [ ] Verify app launches successfully
@@ -444,6 +481,7 @@ git push origin add-intel-build --tags
 - [ ] Test basic functionality (open project, edit file, save)
 
 **4. Auto-Updater Testing (if time permits):**
+
 - [ ] Install v0.1.25 on test Mac
 - [ ] Publish v0.1.26 draft release
 - [ ] Launch v0.1.25 app
@@ -452,6 +490,7 @@ git push origin add-intel-build --tags
 - [ ] Verify app relaunches successfully on v0.1.26
 
 **5. Website Testing (after merge to main):**
+
 - [ ] Website DMG downloads correctly
 - [ ] Download button shows "Universal (Intel & Apple Silicon)" subtitle
 - [ ] DMG filename is `astro-editor-latest.dmg`
@@ -459,6 +498,7 @@ git push origin add-intel-build --tags
 ### Expected Outcomes
 
 **Success Criteria:**
+
 1. ✅ Universal DMG builds without errors
 2. ✅ File size approximately doubles (6.2MB → ~12-13MB)
 3. ✅ latest.json has all three platform entries
@@ -467,6 +507,7 @@ git push origin add-intel-build --tags
 6. ✅ All signing and notarization passes
 
 **If Issues Arise:**
+
 - Draft release allows testing without affecting users
 - Can delete tag and draft release if needed
 - Make fixes on branch and try again
@@ -560,6 +601,7 @@ git push origin main
 ## References
 
 ### Tauri Documentation
+
 - [Tauri v2 Documentation](https://v2.tauri.app/)
 - [Tauri v2 Updater Plugin](https://v2.tauri.app/plugin/updater/)
 - [Tauri v2 GitHub Workflows](https://v2.tauri.app/distribute/pipelines/github/)
@@ -567,13 +609,16 @@ git push origin main
 - [Tauri Action Repository](https://github.com/tauri-apps/tauri-action)
 
 ### Apple Documentation
+
 - [Building a universal macOS binary](https://developer.apple.com/documentation/apple-silicon/building-a-universal-macos-binary)
 
 ### Implementation Examples
+
 - [Tauri Action action.yml](https://github.com/tauri-apps/tauri-action/blob/dev/action.yml) - Configuration options
 - [Tauri Auto-updater Guide](https://thatgurjot.com/til/tauri-auto-updater/)
 
 ### Project Files
+
 - `.github/workflows/release.yml` - Current release workflow
 - `scripts/prepare-release.js` - Release preparation script
 - `.github/workflows/deploy-website.yml` - Website deployment
@@ -581,6 +626,7 @@ git push origin main
 - `docs/developer/apple-signing-setup.md` - Apple signing guide
 
 ### Research Notes
+
 - macOS 26 (Tahoe, Sept 2025) is last Intel-supported version
 - Universal binaries are industry standard for 2025
 - Tauri v2 fully supports `universal-apple-darwin` target

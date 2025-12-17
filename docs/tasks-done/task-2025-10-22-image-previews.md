@@ -26,17 +26,17 @@ Implemented and tested the core infrastructure for loading images from various s
 
 - Location: `src-tauri/src/commands/files.rs:1012`
 - Handles three path types:
-  - Absolute from project root: `/src/assets/image.png`
-  - Relative to current file: `./image.png` or `../images/image.png`
-  - Remote URLs: `https://example.com/image.png`
+    - Absolute from project root: `/src/assets/image.png`
+    - Relative to current file: `./image.png` or `../images/image.png`
+    - Remote URLs: `https://example.com/image.png`
 - Security: Uses existing `validate_project_path` to prevent path traversal
 - Returns validated absolute filesystem path
 
 **2. Configuration Changes**
 
 - `src-tauri/tauri.conf.json`: Added asset protocol with CSP
-  - Enabled `assetProtocol` with scope `["**"]`
-  - CSP allows `asset:` and `http://asset.localhost` in img-src
+    - Enabled `assetProtocol` with scope `["**"]`
+    - CSP allows `asset:` and `http://asset.localhost` in img-src
 - `src-tauri/Cargo.toml`: Added `protocol-asset` feature to Tauri dependency
 
 **3. Testing Results**
@@ -59,16 +59,16 @@ Implemented syntax-agnostic image detection that finds ALL image paths/URLs rega
 **1. Functions Added to `src/lib/editor/urls/detection.ts`:**
 
 - `isImageUrl(urlOrPath: string): boolean` - Checks if URL/path ends with image extension
-  - Handles query parameters and fragments correctly
-  - Case-insensitive matching
-  - Supports all common image formats (PNG, JPG, JPEG, GIF, WebP, SVG, BMP, ICO)
+    - Handles query parameters and fragments correctly
+    - Case-insensitive matching
+    - Supports all common image formats (PNG, JPG, JPEG, GIF, WebP, SVG, BMP, ICO)
 
 - `findImageUrlsAndPathsInText(text: string, offset?: number): UrlMatch[]` - Finds ALL image references
-  - **Remote URLs**: `https://example.com/image.png`
-  - **Relative paths**: `./image.png` or `../images/photo.jpg`
-  - **Absolute paths**: `/src/assets/image.png`
-  - Works across ANY syntax: markdown, HTML, MDX components, or plain text
-  - Detects based on image extension only - syntax-agnostic approach
+    - **Remote URLs**: `https://example.com/image.png`
+    - **Relative paths**: `./image.png` or `../images/photo.jpg`
+    - **Absolute paths**: `/src/assets/image.png`
+    - Works across ANY syntax: markdown, HTML, MDX components, or plain text
+    - Detects based on image extension only - syntax-agnostic approach
 
 **2. Test Coverage:**
 
@@ -156,10 +156,10 @@ To test, run the app and:
 
 - Location: `/test/dummy-astro-project/src/content/articles/2025-01-22-image-preview-test.md`
 - Contains Lorem Ipsum text with 4 image types:
-  - Absolute path: `![Styleguide Image](/src/assets/articles/styleguide-image.jpg)`
-  - Relative path: `![Image Test](./imagetest.png)`
-  - Remote URL: `![Danny's Avatar](https://danny.is/avatar.jpg)`
-  - HTML img tag: `<img src="/src/assets/articles/styleguide-image.jpg" />`
+    - Absolute path: `![Styleguide Image](/src/assets/articles/styleguide-image.jpg)`
+    - Relative path: `![Image Test](./imagetest.png)`
+    - Remote URL: `![Danny's Avatar](https://danny.is/avatar.jpg)`
+    - HTML img tag: `<img src="/src/assets/articles/styleguide-image.jpg" />`
 - All referenced images exist and are ready for testing
 - Article includes inline images, plain URLs, and mixed content scenarios
 
@@ -244,17 +244,17 @@ Successfully wired up ImagePreview to the editor with performance optimizations:
 
 - Added `useProjectStore` import for `projectPath`
 - **Optimized selector**: Use `currentFilePath` instead of full `currentFile` object
-  - `const currentFilePath = useEditorStore(state => state.currentFile?.path)`
-  - Prevents re-renders when other `currentFile` properties change
+    - `const currentFilePath = useEditorStore(state => state.currentFile?.path)`
+    - Prevents re-renders when other `currentFile` properties change
 
 **2. Component Integration:**
 
 - Imported `ImagePreview` component
 - Added to JSX with conditional rendering (`{projectPath && ...}`)
 - Passed three required props:
-  - `hoveredImage` from `useImageHover` hook
-  - `projectPath` from store
-  - `currentFilePath || null`
+    - `hoveredImage` from `useImageHover` hook
+    - `projectPath` from store
+    - `currentFilePath || null`
 
 **3. Hover State Optimization:**
 

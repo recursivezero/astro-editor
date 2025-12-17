@@ -13,11 +13,14 @@ This document provides guidelines and information for contributors.
 ### Setup
 
 1. Clone the repository
-2. Install dependencies:
+2. Install dependencies:  
+
    ```bash
    pnpm install
-   ```
-3. Start development server:
+   ```  
+
+3. Start development server:  
+
    ```bash
    pnpm run dev
    ```
@@ -69,12 +72,14 @@ See `docs/developer/architecture-guide.md` for detailed patterns.
 ## Code Style
 
 **TypeScript/React:**
+
 - Strict TypeScript enabled
 - Direct Store Pattern for forms (not React Hook Form)
 - Functional components with hooks
 - `kebab-case` directories, `PascalCase` files
 
 **Rust:**
+
 - Modern formatting: `format!("{variable}")`
 - Follow Clippy recommendations
 - Tauri v2 APIs only
@@ -82,6 +87,7 @@ See `docs/developer/architecture-guide.md` for detailed patterns.
 ## Testing
 
 Write tests for:
+
 - Business logic in `lib/` modules (unit tests)
 - User workflows (integration tests)
 - Complex field components (component tests)

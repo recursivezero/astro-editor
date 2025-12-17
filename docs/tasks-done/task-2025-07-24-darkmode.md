@@ -3,6 +3,7 @@
 ## Overview
 
 The editor pane already has excellent dark mode support with proper CSS variables. The main issues are:
+
 1. Hardcoded colors in sidebar and UI components that break in dark mode
 2. White border around the application window
 3. Status indicators (draft, required fields) need theme-aware semantic colors
@@ -11,6 +12,7 @@ The editor pane already has excellent dark mode support with proper CSS variable
 ## Current State Analysis
 
 ### ✅ What's Working Well
+
 - Theme provider (`src/lib/theme-provider.tsx`) is properly implemented
 - Comprehensive CSS variable system in `src/App.css` with light/dark variants
 - Editor colors are perfectly themed with `--editor-color-*` variables
@@ -19,7 +21,9 @@ The editor pane already has excellent dark mode support with proper CSS variable
 ### ❌ Issues Identified
 
 #### 1. App Container Border (High Priority)
+
 **File:** `src/App.css` lines 185-187
+
 ```css
 #root {
   background: rgba(255, 255, 255, 0.8);  /* ❌ Hardcoded white */
@@ -28,24 +32,30 @@ The editor pane already has excellent dark mode support with proper CSS variable
 ```
 
 #### 2. Traffic Light Buttons (Medium Priority)
+
 **File:** `src/App.css` lines 189-242
+
 - Hardcoded macOS window control colors and borders
 - Need theme-aware variants
 
 #### 3. Component Hardcoded Colors (High Priority)
 
 **LeftSidebar.tsx:**
+
 - `bg-orange-50/50` → Draft mode backgrounds
 - `text-orange-600` → Draft indicators  
 - `bg-yellow-50/50` → Draft file highlights
 - Should use semantic color variables
 
 **Frontmatter Fields:**
+
 - `text-red-500` → Required field indicators
 - Need semantic `--color-required` variable
 
 #### 4. Body Text Color (Medium Priority)
+
 **File:** `src/App.css` line 162
+
 ```css
 body {
   color: #333; /* ❌ Should use CSS variable */
@@ -53,7 +63,9 @@ body {
 ```
 
 #### 5. Layout Background Inconsistency (Low Priority)
+
 **File:** `src/components/layout/Layout.tsx` line 28
+
 - Uses `--editor-color-background` instead of `--background`
 - Creates inconsistency between UI and editor areas
 
@@ -62,6 +74,7 @@ body {
 ### Phase 1: Fix App Container and Border (30 mins)
 
 1. **Update App.css root styles**
+
    ```css
    #root {
      background: hsl(var(--background));
@@ -70,6 +83,7 @@ body {
    ```
 
 2. **Update body text color**
+
    ```css
    body {
      color: hsl(var(--foreground));
@@ -79,6 +93,7 @@ body {
 ### Phase 2: Create Semantic Status Colors (45 mins)
 
 1. **Add new CSS variables to App.css**
+
    ```css
    :root {
      /* Status colors */
@@ -100,6 +115,7 @@ body {
    ```
 
 2. **Update Tailwind theme mapping**
+
    ```css
    @theme inline {
      --color-draft: hsl(var(--color-draft));
@@ -113,6 +129,7 @@ body {
 ### Phase 3: Update Component Colors (60 mins)
 
 1. **LeftSidebar.tsx** - Replace hardcoded colors:
+
    ```tsx
    // Line 337: Draft mode background
    'bg-orange-50/50' → 'bg-[var(--color-draft-bg)]'
@@ -130,11 +147,13 @@ body {
    ```
 
 2. **Frontmatter Field Components** - Update required indicators:
+
    ```tsx
    'text-red-500' → 'text-[var(--color-required)]'
    ```
 
 3. **Search for other hardcoded colors**:
+
    ```bash
    # Find remaining hardcoded Tailwind colors
    grep -r "text-\(red\|orange\|yellow\|blue\|green\)-[0-9]" src/components/
@@ -145,11 +164,12 @@ body {
 
 1. **Review current sidebar variables in App.css:**
    - `--sidebar-background`
-   - `--sidebar-foreground` 
+   - `--sidebar-foreground`
    - `--sidebar-primary`
    - `--sidebar-accent`
 
 2. **Make colors more subtle** by adjusting HSL values:
+
    ```css
    :root {
      /* Make sidebar backgrounds slightly more muted */
@@ -165,6 +185,7 @@ body {
 ### Phase 5: Fix Traffic Light Buttons (Optional - 30 mins)
 
 1. **Add theme-aware traffic light styles:**
+
    ```css
    .dark .traffic-light-close {
      background: hsl(var(--destructive));
@@ -185,6 +206,7 @@ body {
 ### Phase 6: Fix Layout Background Consistency (15 mins)
 
 1. **Update Layout.tsx** to use proper UI background:
+
    ```tsx
    // Line 28: Change from editor background to UI background
    <div className="h-screen w-screen bg-background ...">

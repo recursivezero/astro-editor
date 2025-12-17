@@ -4,8 +4,8 @@ These tasks are necessary before releasing this "to the world".
 
 ## In-App
 
-- [x] Add a "Preferences" menu item under "Astro Editor" macoOS menubar menu which opens the settings. The correct coyboard shortcut is `Cmd+,` which already works. Do this in the same way you have with other Tauri menubar items.
-- [x] Add "About" dialog and menu item (should include version number, build, release datee etc)
+- [x] Add a "Preferences" menu item under "Astro Editor" macOS menubar menu which opens the settings. The correct keyboard shortcut is `Cmd+,` which already works. Do this in the same way you have with other Tauri menubar items.
+- [x] Add "About" dialog and menu item (should include version number, build, release date etc)
 - [x] Update all info in `package.json` and `src-tauri/tauri.conf.json`
 
 ## Docs and Files
@@ -30,7 +30,7 @@ These tasks are necessary before releasing this "to the world".
 
 ## User Guide, Icons & README
 
-- [x] Add screenshorts etc to User Guide
+- [x] Add screenshots etc to User Guide
 - [x] Finish editing User Guide
 - [x] Update README.md accordingly
 

@@ -8,7 +8,7 @@ This directory contains all documentation for the Astro Editor project.
 
 **Key Principles**:
 
-1. **Progressive Disclosure** - Start with `architecture-guide.md` for core patterns, then dive into focused topic docs only when needed
+1. **Progressive Disclosure** - Start with [`architecture-guide.md`][architecture-guide] for core patterns, then dive into focused topic docs only when needed
 2. **Flat Structure** - No subdirectories. AI agents shouldn't hunt through folders. Clear file naming indicates content.
 3. **Right-Sized Docs** - Balance between monolithic (context window bloat) and fragmented (too many tiny docs)
    - Core guides: ~400-500 lines (comprehensive overview)
@@ -16,7 +16,7 @@ This directory contains all documentation for the Astro Editor project.
    - Deep references: ~500-1000+ lines (when you need all details)
 4. **Single Responsibility** - Each doc covers one focused topic or system
 5. **Pattern-Based Naming** - File names describe WHAT docs cover, not implementation details
-   - ✅ `state-management.md` (what it covers)
+   - ✅ [`state-management.md`][state-managament] (what it covers)
    - ❌ `zustand-guide.md` (implementation detail)
 6. **Architecture Guide as Hub** - Most important patterns + references to specialized docs. AI agents regularly check this for compliance.
 7. **Avoid Component-Specific Docs** - Component details belong in code comments, not separate docs. Exception: feature implementation examples showing how patterns work together.
@@ -26,14 +26,14 @@ This directory contains all documentation for the Astro Editor project.
 - Topic is fundamental architectural pattern
 - System is complex and specific to Astro Editor
 - Content is deep reference material (Astro schemas, decisions log)
-- Feature serves as implementation example for a feature we are likeley to use as reference for other features in the future, or which significantly diverges from standard patterns in this app (eg. image preview)
+- Feature serves as implementation example for a feature we are likely to use as reference for other features in the future, or which significantly diverges from standard patterns in this app (eg. image preview)
 
 **When NOT to Create a New Doc**:
 
 - Component-specific implementation details (use self-documenting code and/or succinct code comments eg JSDoc etc)
 - Simple utilities or helpers (self-documenting)
 - Temporary patterns that may change
-- Fundamental patterns which belong in architecture-guide.md
+- Fundamental patterns which belong in [`architecture-guide.md`][architecture-guide]
 
 ## Non-Developer Documentation
 
@@ -60,7 +60,7 @@ The most important developer docs - foundational patterns for daily development.
 
 ### System Documentation
 
-Other fundamenal developer documentation.
+Other fundamental developer documentation.
 
 - **[developer/cross-platform.md](developer/cross-platform.md)** - Cross-platform development (Tauri config, conditional compilation, platform detection)
 - **[developer/form-patterns.md](developer/form-patterns.md)** - Frontmatter field components and settings forms
@@ -84,7 +84,7 @@ Build optimization, quality control, and release management.
 
 ### Reference Documentation
 
-Very detailed background context which may occasonally be needed and is difficult to get via web searches and fetches.
+Very detailed background context which may occasionally be needed and is difficult to get via web searches and fetches.
 
 - **[developer/astro-generated-contentcollection-schemas.md](developer/astro-generated-contentcollection-schemas.md)** - Comprehensive Astro JSON Schema generation reference
 
@@ -96,7 +96,7 @@ Specific feature implementations that serve as references for similar work.
 
 ### Historical Context
 
-- **[developer/decisions.md](developer/decisions.md)** - Partical Record of architectural decisions and trade-offs. THIS IS UNLIKELEY TO BE ANYWHERE NEAR COMPLETE.
+- **[developer/decisions.md](developer/decisions.md)** - Practical Record of architectural decisions and trade-offs. THIS IS UNLIKELY TO BE ANYWHERE NEAR COMPLETE.
 
 ## Task Management
 
@@ -107,3 +107,8 @@ Specific feature implementations that serve as references for similar work.
 ## Archive
 
 - **[archive/](archive/)** - Old documents which should almost always be ignored.
+
+<!-- References used in markdown -->
+
+[architecture-guide]: [developer/architecture-guide.md]
+[state-managament]: [developer/state-management.md]

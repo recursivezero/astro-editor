@@ -14,20 +14,20 @@ The copyediting mode helps writers identify patterns in their prose by color-cod
 
 - Parse markdown text to identify parts of speech using NLP
 - Apply color highlighting to words based on grammatical role:
-  - **Adjectives** - brown (`var(--color-brown)`)
-  - **Nouns** - red (`var(--color-red)`)
-  - **Adverbs** - pink (`var(--color-pink)`) 
-  - **Verbs** - blue (`var(--color-blue)`)
-  - **Conjunctions** - green (`var(--color-green)`)
+    - **Adjectives** - brown (`var(--color-brown)`)
+    - **Nouns** - red (`var(--color-red)`)
+    - **Adverbs** - pink (`var(--color-pink)`)
+    - **Verbs** - blue (`var(--color-blue)`)
+    - **Conjunctions** - green (`var(--color-green)`)
 
 **Content Filtering:**
 
 - **Exclude** from highlighting (render in muted gray):
-  - Code blocks (` ``` ` and `` ` ``)
-  - Links (`[text](url)`)
-  - HTML/Astro tags (`<tag>`)
-  - Frontmatter content
-  - Markdown syntax characters
+    - Code blocks (` ``` ` and `` ` ``)
+    - Links (`[text](url)`)
+    - HTML/Astro tags (`<tag>`)
+    - Frontmatter content
+    - Markdown syntax characters
 
 **Toggle Controls:**
 
@@ -145,6 +145,7 @@ If native integration proves complex, research:
 ### NLP Library Analysis
 
 **Compromise.js - Recommended**
+
 - Trust Score: 10/10, 87 code examples
 - Built-in parts of speech tagging: `#Adjective`, `#Noun`, `#Verb`, `#Adverb`, `#Conjunction`
 - Client-side, real-time processing designed for browser use
@@ -152,6 +153,7 @@ If native integration proves complex, research:
 - Example usage: `nlp('text').match('#Adjective').json()`
 
 **Alternative Options**
+
 - WASM-based solutions (higher performance, larger bundle)
 - Server-side processing (requires backend)
 - Simple regex-based approaches (lower accuracy)
@@ -159,12 +161,14 @@ If native integration proves complex, research:
 ### CodeMirror 6 Integration Overview
 
 **Key APIs Identified**
+
 - `Decoration.mark()` - CSS class application to text ranges
 - `StateField` + `StateEffect` - managing decoration state
 - `ViewPlugin` - coordinating updates
 - `MatchDecorator` - regex-based decoration (potential alternative)
 
 **Current Architecture Compatibility**
+
 - Extension system at `src/lib/editor/extensions/`
 - Command registry ready for toggle commands
 - Existing decoration patterns (focus-mode, typewriter-mode)
@@ -172,14 +176,17 @@ If native integration proves complex, research:
 ### Spell Check Options
 
 **Browser Native**
+
 - `spellcheck="true"` attribute integration
 - Simplest but limited control
 
 **WebKit/Tauri Integration**
+
 - Complex but best UX for native macOS
 - Requires deep Tauri API research
 
 **Third-party Libraries**
+
 - CodeMirror extensions available
 - Fallback option for cross-platform
 
@@ -188,6 +195,7 @@ If native integration proves complex, research:
 ### 🚨 **CRITICAL PERFORMANCE LIMITATIONS DISCOVERED**
 
 **CodeMirror 6 Decoration System Constraints:**
+
 - Documents as small as **30KB cause editor glitching** with thousands of decorations
 - **Stack overflow errors** (`Maximum call stack size exceeded`) with large decoration counts
 - **CSS implementation method** dramatically affects performance (pseudo-elements vs backgrounds)
@@ -198,11 +206,13 @@ If native integration proves complex, research:
 #### **1. Existing NLP + CodeMirror 6 Implementations**
 
 **Language Server Protocol (LSP) Integration:**
+
 - `FurqanSoftware/codemirror-languageserver` - Working LSP integration
 - `remcohaszing/codemirror-languageservice` - Performance-optimized LSP
 - **LanguageTool LSP** - Professional-grade grammar checking pathway
 
 **Real Working Code Patterns:**
+
 ```javascript
 import {StateField, StateEffect} from "@codemirror/state"
 import {EditorView, Decoration} from "@codemirror/view"
@@ -225,12 +235,14 @@ const highlight_extension = StateField.define({
 #### **2. High-Performance Alternatives Discovered**
 
 **CSS Custom Highlight API (Modern Browsers):**
+
 - **5× better performance** than DOM-based highlighting
 - Avoids layout recalculation completely
 - Perfect for parts-of-speech highlighting
 - Fallback to decorations for older browsers
 
 **Viewport-Only Processing Pattern:**
+
 ```javascript
 const posViewPlugin = ViewPlugin.define(view => ({
   decorations: buildPosDecorations(view),
@@ -246,6 +258,7 @@ const posViewPlugin = ViewPlugin.define(view => ({
 ```
 
 **Web Worker Architecture:**
+
 - Process NLP analysis in background thread
 - **~1MB/second processing speed** with Compromise.js
 - Non-blocking UI updates
@@ -254,12 +267,14 @@ const posViewPlugin = ViewPlugin.define(view => ({
 #### **3. Production-Ready Solutions**
 
 **Grammar Checking Packages Available:**
+
 1. **@grammarly/editor-sdk** - Professional-grade (requires beta access)
 2. **@saplingai/sapling-js** - Neural network-based, 10+ languages
 3. **gramma** - LanguageTool integration package
 4. **compromise** - Perfect for parts-of-speech (83+ POS tags)
 
 **Performance Benchmarks Found:**
+
 - **Monaco Editor**: Limits all computation to viewport size
 - **ProseMirror**: Separates marks vs decorations for performance
 - **Grammarly**: Real-time DOM manipulation across 500k+ applications
@@ -267,7 +282,8 @@ const posViewPlugin = ViewPlugin.define(view => ({
 ### 🏗️ **RECOMMENDED ARCHITECTURE**
 
 #### **Option A: Modern High-Performance (Recommended)**
-```
+
+```plaintext
 CSS Custom Highlight API + Web Workers + Viewport Processing
 ├── Primary: CSS Custom Highlight API (5× faster)
 ├── Fallback: CodeMirror decorations for older browsers  
@@ -276,7 +292,8 @@ CSS Custom Highlight API + Web Workers + Viewport Processing
 ```
 
 #### **Option B: Conservative Reliable**
-```
+
+```plaintext
 CodeMirror Decorations + Viewport Limiting + Debounced Updates
 ├── Decorations: Limited to ~1000 simultaneously 
 ├── Processing: Main thread with 300ms debouncing
@@ -285,7 +302,8 @@ CodeMirror Decorations + Viewport Limiting + Debounced Updates
 ```
 
 #### **Option C: Hybrid Professional**
-```
+
+```plaintext
 Compromise.js (real-time) + LanguageTool LSP (comprehensive)
 ├── Real-time: Viewport-scoped parts-of-speech highlighting
 ├── Professional: Full document grammar analysis on-demand
@@ -295,7 +313,7 @@ Compromise.js (real-time) + LanguageTool LSP (comprehensive)
 
 ### ⚠️ **IMPLEMENTATION CONSTRAINTS**
 
-1. **Document Size Limits**: 
+1. **Document Size Limits**:
    - Safe: <10,000 words with viewport processing
    - Risky: >30,000 characters with full decoration
 
@@ -319,6 +337,7 @@ Compromise.js (real-time) + LanguageTool LSP (comprehensive)
 ### **Implementation Approach: Simplified & Direct**
 
 **Core Architecture:**
+
 - **NLP Library**: Compromise.js (client-side, no API dependencies)
 - **Integration**: CodeMirror 6 StateField + Decoration pattern
 - **Processing**: Main thread with 300ms debouncing (sufficient for blog length)
@@ -413,6 +432,7 @@ export function createCopyeditModeExtension() {
 ```
 
 **Features for Step 1:**
+
 - ✅ Toggle copyedit mode on/off
 - ✅ Highlight nouns (red) and verbs (blue) only
 - ✅ Exclude code blocks and frontmatter
@@ -421,11 +441,13 @@ export function createCopyeditModeExtension() {
 ### **Step 2: Complete POS Highlighting (Week 2)**
 
 **Add remaining parts of speech:**
+
 - Adjectives (brown) - `var(--color-brown)`
 - Adverbs (pink) - `var(--color-pink)`
 - Conjunctions (green) - `var(--color-green)`
 
 **Command Integration (following established patterns):**
+
 ```javascript
 // src/lib/editor/commands/copyeditCommands.ts
 import { EditorCommand } from './types'
@@ -448,7 +470,8 @@ export const createCopyeditModeCommand = (): EditorCommand => {
 ```
 
 **Individual toggles via command registry:**
-- Command palette: "Toggle Copyedit Mode" 
+
+- Command palette: "Toggle Copyedit Mode"
 - Command palette: "Toggle Noun Highlighting"
 - Command palette: "Toggle Verb Highlighting"
 - etc.
@@ -507,6 +530,7 @@ export const createCopyeditModeCommand = (): EditorCommand => {
 ```
 
 **Accessibility (color-blind friendly):**
+
 - Uses existing CSS variables with dark/light mode support
 - Optional patterns/underlines as fallback
 - Screen reader compatibility with proper ARIA attributes
@@ -514,6 +538,7 @@ export const createCopyeditModeCommand = (): EditorCommand => {
 ### **Step 4: Spell Check Integration (Optional)**
 
 **Browser native integration (following theme pattern):**
+
 ```javascript
 // src/lib/editor/extensions/spellcheck.ts
 import { EditorView } from '@codemirror/view'
@@ -539,6 +564,7 @@ export const createExtensions = (config: ExtensionConfig) => {
 ```
 
 **UI Store Integration:**
+
 ```javascript
 // src/store/uiStore.ts (add to existing store)
 interface UIState {
@@ -558,38 +584,44 @@ const useUIStore = create<UIState>()((set) => ({
 ### **Files to Create/Modify (Architecture Compliant)**
 
 **1. Extension Module:**
-```
+
+```plaintext
 src/lib/editor/extensions/copyedit-mode.ts  # Main extension
 src/lib/editor/extensions/index.ts          # Export from extensions
 ```
 
 **2. Commands Module:**
-```
+
+```plaintext
 src/lib/editor/commands/copyeditCommands.ts # Command definitions
 src/lib/editor/commands/types.ts            # Add copyedit command types
 src/lib/editor/commands/index.ts            # Export commands
 ```
 
 **3. Integration Points:**
-```
+
+```plaintext
 src/lib/editor/extensions/createExtensions.ts  # Add to extension array
 src/hooks/editor/useEditorSetup.ts             # Commands integration
 src/store/uiStore.ts                           # Add copyedit mode state
 ```
 
 **4. Styling:**
-```
+
+```plaintext
 src/lib/editor/extensions/copyedit-mode.css    # POS highlighting styles using CSS variables
 ```
 
 **5. Dependencies:**
-```
+
+```plaintext
 package.json                                   # Add compromise dependency
 ```
 
 ### **Performance Expectations (Blog Context)**
 
 **Typical Performance:**
+
 - 1,000 word blog post: ~50-200 decorations
 - 5,000 word blog post: ~250-1,000 decorations  
 - Processing time: <100ms with Compromise.js
@@ -610,6 +642,7 @@ npm install compromise
 ```
 
 **Leverages Existing Architecture:**
+
 - **CodeMirror 6**: StateField + ViewPlugin pattern (focus-mode, typewriter-mode)
 - **Command Registry**: Global command system with type safety
 - **Extension System**: Modular editor extensions in `src/lib/editor/extensions/`
@@ -620,6 +653,7 @@ npm install compromise
 ### **Risk Assessment: LOW**
 
 **Why this approach is low-risk:**
+
 - Blog-length documents well within performance limits
 - Compromise.js is battle-tested (trust score 10/10)
 - CodeMirror decoration pattern is proven
@@ -630,7 +664,8 @@ npm install compromise
 
 ## Current Implementation Status (Step 1 - In Progress)
 
-### ✅ Completed:
+### ✅ Completed
+
 - Basic CodeMirror extension structure (StateField + ViewPlugin)
 - Command palette integration ("Toggle Copyedit Mode")
 - UI store integration (copyeditModeEnabled state)
@@ -641,7 +676,8 @@ npm install compromise
 ### ✅ Step 1 Implementation: COMPLETED WITH NLP REFINEMENT
 
 **✅ All functionality implemented and refined:**
-1. ✅ **Text highlighting** - CSS variables correctly configured (`--editor-color-*` format) 
+
+1. ✅ **Text highlighting** - CSS variables correctly configured (`--editor-color-*` format)
 2. ✅ **Performance optimized** - Deduplication reduces decorations by ~70%
 3. ✅ **Architecture compliance** - Proper getState() pattern, stable callbacks, TypeScript types
 4. ✅ **Content exclusion** - Code blocks, frontmatter, and markdown syntax excluded
@@ -649,16 +685,19 @@ npm install compromise
 6. ✅ **NLP accuracy refined** - Copyedit-focused matching with function word filtering
 
 **✅ NLP Accuracy Issues RESOLVED:**
+
 1. ✅ **Modal/Auxiliary verbs excluded** - "will", "might", "can", "should" no longer highlighted
 2. ✅ **Pronouns excluded from nouns** - "she", "he", "it", "they" no longer highlighted as nouns
 3. ✅ **Content words prioritized** - Focus on meaningful nouns and action verbs for copyediting
 
-### ✅ Architecture Violations Resolved:
+### ✅ Architecture Violations Resolved
+
 - ✅ React useEffect now uses stable callbacks with `getState()` pattern
 - ✅ Decoration creation optimized with deduplication and range tracking
 - ✅ CSS color variables correctly configured (`--editor-color-*` format)
 
-### 🎯 Next Steps:
+### 🎯 Next Steps
+
 1. ✅ **Step 1.1**: Refine NLP matching for copyediting accuracy - COMPLETED
 2. 📋 **Step 2**: Add remaining parts of speech (adjectives, adverbs, conjunctions)
 3. 📋 **Step 3**: Visual polish and theme integration  
@@ -671,12 +710,14 @@ npm install compromise
 **Solution**: Use Compromise.js's more specific tags to filter for content words:
 
 **Original matching (too broad):**
+
 ```javascript
 { matcher: '#Noun', className: 'cm-pos-noun', label: 'noun' },
 { matcher: '#Verb', className: 'cm-pos-verb', label: 'verb' },
 ```
 
 **✅ IMPLEMENTED: Refined matching (copyedit-focused):**
+
 ```javascript
 // Process nouns but exclude pronouns using filtering approach
 const allNouns = doc.match('#Noun')
@@ -705,6 +746,7 @@ allVerbs.forEach(match => {
 ```
 
 **Expected improvements:**
+
 - ❌ Remove: "she", "he", "it", "they" (pronouns)
 - ❌ Remove: "will", "can", "might", "should" (modals)
 - ❌ Remove: "is", "has", "was", "were" (auxiliaries)
@@ -712,29 +754,34 @@ allVerbs.forEach(match => {
 - ✅ Keep: "sits", "runs", "writes" (main action verbs)
 
 **Compromise.js tags available:**
+
 - `#Pronoun` - he, she, it, they, etc.
-- `#Auxiliary` - is, has, will, be, etc. 
+- `#Auxiliary` - is, has, will, be, etc.
 - `#Modal` - can, should, might, must, etc.
 - `#ProperNoun` - specific subset of nouns
 - `#Conjunction` - and, or, but, etc.
 
-### 📊 Current Performance:
+### 📊 Current Performance
+
 - Test document: ~155 words → ~30-50 decorations (0.19-0.32 decorations/word)
 - Target achieved: <50 decorations per document
 - Method: Deduplication + Compromise.js offsets + range tracking
 
 ### ✅ **Completed Implementation for Step 1.1:**
+
 1. ✅ **Research Compromise.js compound selectors** - Confirmed no native support, used filtering approach
 2. ✅ **Update matching logic** - Implemented refined filtering in `createPosDecorations()`
 3. 🔄 **Test accuracy** - Ready for user testing with refined word selection
 4. ✅ **Document findings** - Task updated with implementation details
 
 **Implementation Method:**
+
 - **Filtering approach**: Get all matches, then exclude unwanted subtypes using Set-based filtering
 - **Performance maintained**: Same deduplication and offset optimization as before
 - **Architecture compliant**: Follows all established patterns and passes quality gates
 
-### 📁 Files Modified:
+### 📁 Files Modified
+
 - `src/lib/editor/extensions/copyedit-mode.ts` - Main extension
 - `src/lib/editor/extensions/copyedit-mode.css` - Styling (text colors)
 - `src/store/uiStore.ts` - UI state management

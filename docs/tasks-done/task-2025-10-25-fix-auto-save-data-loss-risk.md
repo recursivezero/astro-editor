@@ -56,16 +56,19 @@ scheduleAutoSave: () => {
 **File**: `src/store/editorStore.ts`
 
 1. **Add state field** to `EditorState` interface:
+
    ```typescript
    lastSaveTimestamp: number | null  // Timestamp of last successful save
    ```
 
 2. **Update initial state**:
+
    ```typescript
    lastSaveTimestamp: null,
    ```
 
 3. **Modify `scheduleAutoSave()` method**:
+
    ```typescript
    scheduleAutoSave: () => {
      const store = get()
@@ -99,6 +102,7 @@ scheduleAutoSave: () => {
    ```
 
 4. **Update `saveFile()` method** to set timestamp after successful save:
+
    ```typescript
    // Add after successful save (after isDirty: false)
    set({ lastSaveTimestamp: Date.now() })
@@ -124,6 +128,7 @@ scheduleAutoSave: () => {
 ### Testing
 
 Manual test: Type continuously for 15 minutes
+
 - Expected: File saves every ~10 seconds
 - Verify: Check file modification time or console logs
 

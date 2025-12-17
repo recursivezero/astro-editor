@@ -1,6 +1,6 @@
 # Task 3: Rewrite Zod Schema Parser to Use Pattern Matching
 
-https://github.com/dannysmith/astro-editor/issues/40
+<https://github.com/dannysmith/astro-editor/issues/40>
 
 ## Status
 
@@ -39,41 +39,45 @@ All phases of the Zod parser rewrite have been successfully completed. The new p
 ### What's Been Completed ✅
 
 **Phase 0: Test Audit (DONE)**
+
 - ✅ Deleted 7 obsolete constraint-parsing tests
 - ✅ Wrote 7 new focused tests for helper discovery and path resolution
 - ✅ All infrastructure tests (6) still passing
 
 **Phase 1: Helper Discovery (DONE)**
+
 - ✅ Created `HelperType` enum and `HelperMatch` struct (src-tauri/src/parser.rs:65-78)
 - ✅ Implemented `find_helper_calls()` function (lines 1048-1101)
-  - Uses regex to find `image()` and `reference()` calls
-  - Extracts collection names from `reference('collectionName')`
-  - Comprehensive logging with context
+    - Uses regex to find `image()` and `reference()` calls
+    - Extracts collection names from `reference('collectionName')`
+    - Comprehensive logging with context
 - ✅ All 3 unit tests passing:
-  - `test_find_helper_calls_basic`
-  - `test_find_helper_calls_multiline`
-  - `test_find_helper_calls_deep_nesting`
+    - `test_find_helper_calls_basic`
+    - `test_find_helper_calls_multiline`
+    - `test_find_helper_calls_deep_nesting`
 
 **Phase 2: Path Resolution (DONE)**
+
 - ✅ Implemented `find_field_name_backwards()` helper (lines 1103-1138)
 - ✅ Implemented `resolve_field_path()` core algorithm (lines 1159-1226)
-  - Scans backwards from helper position
-  - Tracks brace levels to find parent fields
-  - Builds dotted paths (e.g., `coverImage.image`, `metadata.author.avatar`)
+    - Scans backwards from helper position
+    - Tracks brace levels to find parent fields
+    - Builds dotted paths (e.g., `coverImage.image`, `metadata.author.avatar`)
 - ✅ All 6 unit tests passing:
-  - `test_resolve_top_level_field`
-  - `test_resolve_nested_field`
-  - `test_resolve_deep_nested_field`
-  - `test_resolve_multiline_nested`
-  - `test_resolve_array_of_references`
-  - `test_resolve_multiple_helpers`
+    - `test_resolve_top_level_field`
+    - `test_resolve_nested_field`
+    - `test_resolve_deep_nested_field`
+    - `test_resolve_multiline_nested`
+    - `test_resolve_array_of_references`
+    - `test_resolve_multiple_helpers`
 
 **Phase 3: Integration (70% DONE)**
+
 - ✅ Implemented `is_inside_array()` helper (lines 1140-1157)
 - ✅ Implemented `extract_zod_special_fields()` main function (lines 1228-1337)
-  - Finds helpers, resolves paths, creates JSON output
-  - Handles both array and non-array contexts
-  - Proper error handling with warnings
+    - Finds helpers, resolves paths, creates JSON output
+    - Handles both array and non-array contexts
+    - Proper error handling with warnings
 - ✅ Replaced `parse_schema_fields()` to call new function (line 437-439)
 - ✅ Unit test `test_extract_zod_special_fields_basic` passing
 - ✅ Unit test `test_extract_basic_schema_with_arrow_function` passing
@@ -83,6 +87,7 @@ All phases of the Zod parser rewrite have been successfully completed. The new p
 **Problem**: Integration tests failing with `collections.len() == 0`
 
 **Tests Failing** (7 total):
+
 - `test_find_top_level_image`
 - `test_find_nested_image`
 - `test_find_deep_nested_image`
@@ -92,15 +97,18 @@ All phases of the Zod parser rewrite have been successfully completed. The new p
 - `test_helpers_with_comments`
 
 **What Works**:
+
 - ✅ Individual functions all work (helper finding, path resolution, extraction)
 - ✅ `extract_collections_block()` finds the collections block correctly
 - ✅ Schema extraction works when tested directly
 - ✅ Directory creation works
 
 **What Doesn't Work**:
+
 - ❌ `parse_collection_definitions()` returns 0 collections even though it receives the collections block
 
 **Debug Output** (from `test_full_parse_with_image_helper`):
+
 ```
 Created directory: "/var/.../test-full-parse-image/project/src/content/test"
 Directory exists: true
@@ -121,6 +129,7 @@ The test schemas use `export const collections = { test: defineCollection({ ... 
 **Likely Issue**: The regex `r"(\w+)\s*:\s*defineCollection\s*\("` on line 325 needs to be checked. The collections block being passed might not contain `defineCollection` in the expected position.
 
 **Next Steps to Debug**:
+
 1. Add debug prints in `parse_collection_definitions()` to see which code path executes
 2. Print the regex captures to see if it's matching
 3. Check if the collections_block content is what we expect
@@ -129,16 +138,17 @@ The test schemas use `export const collections = { test: defineCollection({ ... 
 ### Files Modified
 
 - `src-tauri/src/parser.rs` - Main implementation file
-  - Added new structs/enums (lines 65-78)
-  - Added new pattern-matching functions (lines 1048-1337)
-  - Replaced `parse_schema_fields()` body (line 437-439)
-  - Added debug logging throughout
-  - Added 10 new unit tests
-  - Deleted 7 obsolete tests
+    - Added new structs/enums (lines 65-78)
+    - Added new pattern-matching functions (lines 1048-1337)
+    - Replaced `parse_schema_fields()` body (line 437-439)
+    - Added debug logging throughout
+    - Added 10 new unit tests
+    - Deleted 7 obsolete tests
 
 ### What Needs to Be Done Next
 
 **Immediate** (to complete Phase 3):
+
 1. Debug `parse_collection_definitions()` to find why collections aren't being detected
    - Add more debug output to see regex matching
    - Verify collections_block content
@@ -148,18 +158,21 @@ The test schemas use `export const collections = { test: defineCollection({ ... 
 4. Verify all 7 failing integration tests pass
 
 **Then** (Phases 4-5):
+
 - Phase 4: Add edge case tests if needed
 - Phase 5: Clean up old code and documentation
 
 ### Test Summary
 
 **Passing** (15):
+
 - All infrastructure tests
 - All helper discovery unit tests
 - All path resolution unit tests
 - Integration tests for schemas without helpers
 
 **Failing** (7):
+
 - All integration tests that expect to find image/reference helpers
 
 ### Important Context
@@ -382,11 +395,13 @@ The immediate benefit is nested image fields working correctly. The longer-term 
 **After Review - CRITICAL DISCOVERY**: Arrays are NOT flattened in JSON schema!
 
 **What This Means**:
+
 1. **Array Detection Is Mandatory**: Path resolution MUST detect `z.array(...)`
 2. **Different Output for Arrays**: `{ name: "gallery", type: "Array", arrayType: "Image" }`
 3. **Not Optional**: Without this, arrays of objects with images won't work at all
 
 **Key Technical Findings**:
+
 - JSON schema has `gallery` (array field), NOT `gallery.src` (nested fields)
 - The merger looks for array field names and changes their `sub_type`
 - Current parser likely has bugs with arrays of objects (explains why UI doesn't support them)
@@ -395,6 +410,7 @@ The immediate benefit is nested image fields working correctly. The longer-term 
 - Field names MUST match JSON schema exactly (dotted paths for nested objects)
 
 **Plan Updates**:
+
 - Phase 0: Added array tests (critical!)
 - Phase 2: Path resolution returns `PathInfo { field_path, is_in_array }`
 - Phase 3: Different output logic for array vs non-array fields
@@ -445,6 +461,7 @@ Why? Because many existing tests validate the WRONG behavior (constraint parsing
 **Expected Code Reduction**: ~1100 lines → ~600-700 lines (40% reduction!)
 
 **Core Philosophy**:
+
 - **We're ENHANCING, not parsing**: JSON schema is the source of truth for structure
 - **Keep it simple**: No special cases, no complex logic, no performance tuning
 - **Arrays are free**: Resolve `gallery.src` the same as `cover.image` - no special handling
@@ -452,6 +469,7 @@ Why? Because many existing tests validate the WRONG behavior (constraint parsing
 - **No optional detection**: JSON schema already knows what's required/optional
 
 **Output Format to Maintain**:
+
 ```json
 {
   "type": "zod",
@@ -476,6 +494,7 @@ Why? Because many existing tests validate the WRONG behavior (constraint parsing
 Looking at `src-tauri/src/parser.rs`, there are ~14 tests. Many test things we're NO LONGER DOING:
 
 **Tests to DELETE** (testing constraint parsing - not our job anymore):
+
 1. `test_enhanced_schema_parsing` - Tests parsing string/number constraints
 2. `test_literal_field_parsing` - Tests parsing literal types
 3. `test_union_field_parsing` - Tests parsing union types
@@ -485,6 +504,7 @@ Looking at `src-tauri/src/parser.rs`, there are ~14 tests. Many test things we'r
 7. `test_multiline_field_normalization` - Tests constraint parsing from multi-line
 
 **Tests to KEEP** (infrastructure, still needed):
+
 1. `test_parse_simple_config` - Collection discovery
 2. `test_empty_config` - Empty collections handling
 3. `test_extract_collections_block` - Finding collections export
@@ -495,6 +515,7 @@ Looking at `src-tauri/src/parser.rs`, there are ~14 tests. Many test things we'r
 **New Focused Tests to WRITE** (before implementing):
 
 1. **Test finding top-level image helper**:
+
 ```rust
 #[test]
 fn test_find_top_level_image() {
@@ -509,7 +530,8 @@ fn test_find_top_level_image() {
 }
 ```
 
-2. **Test finding nested image helper**:
+1. **Test finding nested image helper**:
+
 ```rust
 #[test]
 fn test_find_nested_image() {
@@ -526,7 +548,8 @@ fn test_find_nested_image() {
 }
 ```
 
-3. **Test finding deeply nested image (3+ levels)**:
+1. **Test finding deeply nested image (3+ levels)**:
+
 ```rust
 #[test]
 fn test_find_deep_nested_image() {
@@ -544,7 +567,8 @@ fn test_find_deep_nested_image() {
 }
 ```
 
-4. **Test finding reference with collection name**:
+1. **Test finding reference with collection name**:
+
 ```rust
 #[test]
 fn test_find_reference_helper() {
@@ -563,7 +587,8 @@ fn test_find_reference_helper() {
 }
 ```
 
-5. **Test multi-line formatting** (the bug we're fixing!):
+1. **Test multi-line formatting** (the bug we're fixing!):
+
 ```rust
 #[test]
 fn test_multiline_nested_object() {
@@ -582,7 +607,8 @@ fn test_multiline_nested_object() {
 }
 ```
 
-6. **Test array of references** (arrays of helpers - SUPPORTED):
+1. **Test array of references** (arrays of helpers - SUPPORTED):
+
 ```rust
 #[test]
 fn test_array_of_references() {
@@ -604,7 +630,8 @@ fn test_array_of_references() {
 
 **Note**: We're NOT testing `z.array(z.object({ src: image() }))` because we're intentionally not supporting that case (too complex, UI doesn't support it, extremely rare).
 
-7. **Test comments don't break parsing**:
+1. **Test comments don't break parsing**:
+
 ```rust
 #[test]
 fn test_helpers_with_comments() {
@@ -637,6 +664,7 @@ fn test_helpers_with_comments() {
 
 **Why Delete Constraint Tests**:
 ✅ **VERIFIED** by examining actual JSON schemas from `test/dummy-astro-project/.astro/collections/`:
+
 - String constraints (minLength, maxLength) ✅ In JSON schemas
 - Number constraints (minimum, maximum) ✅ In JSON schemas
 - Format validation (email, uri) ✅ In JSON schemas
@@ -653,15 +681,17 @@ The Zod parser does NOT need to parse any of this!
 
 **DEBUG LOGGING IS IN PLACE** - The code now has comprehensive debug output in `parse_collection_definitions()` (lines 283-380).
 
-### To Debug the Issue:
+### To Debug the Issue
 
 Run this command and examine the output:
+
 ```bash
 cd src-tauri
 cargo test parser::tests::test_full_parse_with_image_helper -- --exact --nocapture
 ```
 
 **What to look for in the debug output:**
+
 1. `[DEBUG] collections_block content:` - Shows the EXACT content being parsed
 2. `[DEBUG] Trying NEW format regex match...` - Did it match the new format?
 3. `[DEBUG] Trying OLD format regex match...` - Did it match the old format?
@@ -671,16 +701,19 @@ cargo test parser::tests::test_full_parse_with_image_helper -- --exact --nocaptu
 7. `[DEBUG] Returning X collections` - Final count
 
 **Hypothesis**: The regex is matching `test: defineCollection(...)` correctly (old format), but one of these is failing:
+
 - Directory doesn't exist at the expected path
 - Directory check is failing for some reason
 - Schema extraction is failing
 
 **Quick Fix Once You Identify the Issue:**
+
 - If directory path is wrong: Check `content_dir` in the debug output
 - If regex isn't matching: The collections_block content will show why
 - If schema extraction fails: Add debug to `extract_basic_schema()`
 
 **Success Criteria**:
+
 - Removed ~50% of tests (the constraint parsing ones)
 - Have clear, focused test suite that defines new behavior
 - Tests fail initially (expected - we haven't implemented yet)
@@ -688,6 +721,7 @@ cargo test parser::tests::test_full_parse_with_image_helper -- --exact --nocaptu
 
 **Manual Validation**:
 After writing tests, review them:
+
 - Do they test ONLY image()/reference() discovery?
 - Do they test path resolution correctly?
 - Are they simple and readable?
@@ -702,6 +736,7 @@ After writing tests, review them:
 **Deliverables**:
 
 1. **New struct for tracking helper locations**:
+
 ```rust
 #[derive(Debug, Clone)]
 struct HelperMatch {
@@ -717,7 +752,8 @@ enum HelperType {
 }
 ```
 
-2. **Pattern matching function**:
+1. **Pattern matching function**:
+
 ```rust
 /// Find all image() and reference() helper calls in schema text
 /// Returns positions and metadata for each helper found
@@ -733,12 +769,13 @@ fn find_helper_calls(schema_text: &str) -> Vec<HelperMatch> {
 }
 ```
 
-3. **Add comprehensive logging**:
+1. **Add comprehensive logging**:
    - Log the total number of helpers found
    - Log each helper's position and surrounding context (±20 chars)
    - Log the collection name for reference() helpers
 
 **Testing**:
+
 - Unit test: Find single top-level `image()` call
 - Unit test: Find multiple `image()` calls
 - Unit test: Find `reference('authors')` with collection name
@@ -746,6 +783,7 @@ fn find_helper_calls(schema_text: &str) -> Vec<HelperMatch> {
 - Unit test: Handle edge cases (comments, strings containing "image()")
 
 **Success Criteria**:
+
 - Can find all `image()` calls in test/dummy-astro-project/src/content.config.ts
 - Can extract collection names from `reference()` calls
 - Handles multi-line formatting correctly
@@ -776,6 +814,7 @@ Find: dotted path like "coverImage.image"
 **Deliverables**:
 
 1. **Path resolution function**:
+
 ```rust
 /// Trace backwards from helper position to build dotted field path
 ///
@@ -830,13 +869,14 @@ fn resolve_field_path(schema_text: &str, helper_position: usize) -> Result<Strin
 }
 ```
 
-2. **Add detailed logging**:
+1. **Add detailed logging**:
    - Log the path resolution process for each helper
    - Log brace levels as we trace backwards
    - Log each field name component found
    - Log the final resolved path
 
 **Edge Cases to Handle**:
+
 - Top-level fields (no nesting): `heroImage: image()` → `heroImage`
 - Single nesting: `cover: z.object({ image: image() })` → `cover.image`
 - Deep nesting (3+ levels): `meta: { author: { avatar: image() } }` → `meta.author.avatar`
@@ -846,11 +886,13 @@ fn resolve_field_path(schema_text: &str, helper_position: usize) -> Result<Strin
 - Whitespace variations
 
 **Error Handling**:
+
 - If path resolution fails, log warning with context and skip that field
 - Don't fail the entire parse - Zod parser is enhancing, not source of truth
 - Arrays of objects with helpers will likely fail path resolution - this is fine, we skip them
 
 **Path Resolution Algorithm** (SIMPLIFIED):
+
 1. Start at helper position
 2. Scan backwards to find nearest field name (word before `:`)
 3. Track brace levels `{}` to know when we exit to parent object
@@ -859,6 +901,7 @@ fn resolve_field_path(schema_text: &str, helper_position: usize) -> Result<Strin
 6. For arrays of helpers like `z.array(reference('tags'))`, the field name is `tags` (no nesting to resolve)
 
 **Testing**:
+
 - Unit test: Top-level field path
 - Unit test: Single-level nested path
 - Unit test: Deep nested path (3+ levels)
@@ -868,6 +911,7 @@ fn resolve_field_path(schema_text: &str, helper_position: usize) -> Result<Strin
 - **NOT testing**: Arrays of objects with helpers (intentionally not supported)
 
 **Success Criteria**:
+
 - Correctly resolves `coverImage.image` from notes collection schema
 - Handles arbitrary nesting depth
 - Works with all formatting variations
@@ -883,6 +927,7 @@ Test path resolution by adding logs showing resolved paths for all helpers in du
 **Goal**: Replace `parse_schema_fields()` with new pattern-matching approach while maintaining exact same output format.
 
 **Strategy**:
+
 - Keep all existing helper functions (`extract_reference_collection`, etc.)
 - Keep the ZodField struct and JSON serialization unchanged
 - Only replace the core field extraction logic
@@ -890,6 +935,7 @@ Test path resolution by adding logs showing resolved paths for all helpers in du
 **Deliverables**:
 
 1. **New main extraction function**:
+
 ```rust
 /// Extract special fields (image and reference helpers) using pattern matching
 ///
@@ -947,7 +993,8 @@ fn extract_zod_special_fields(schema_text: &str) -> Option<String> {
 }
 ```
 
-2. **Update `parse_schema_fields()` to call new function**:
+1. **Update `parse_schema_fields()` to call new function**:
+
 ```rust
 fn parse_schema_fields(schema_text: &str) -> Option<String> {
     // Replace entire function body with:
@@ -955,24 +1002,27 @@ fn parse_schema_fields(schema_text: &str) -> Option<String> {
 }
 ```
 
-3. **Preserve all helper functions**:
+1. **Preserve all helper functions**:
    - Keep `extract_reference_collection()` for reference name extraction
    - Keep `serialize_constraints()` for JSON output
    - Keep `remove_comments()` for preprocessing
 
 **Testing**:
+
 - Run ALL existing parser tests - they should all pass
 - Test with enhanced_config.ts fixture
 - Test with dummy project's content.config.ts
 - Verify output JSON format matches exactly
 
 **Success Criteria**:
+
 - All existing tests pass without modification
 - Output JSON format is identical to before
 - No regressions in existing functionality
 - Nested image fields now work correctly
 
 **Manual Testing**:
+
 1. Run the app with dummy project
 2. Open a note with `coverImage` field
 3. Verify that `coverImage.image` renders as ImageField (not text input)
@@ -990,6 +1040,7 @@ fn parse_schema_fields(schema_text: &str) -> Option<String> {
 **Potential Additional Tests**:
 
 1. **Test multi-line nested object with image**:
+
 ```rust
 #[test]
 fn test_multiline_nested_image_field() {
@@ -1009,7 +1060,8 @@ export const notes = defineCollection({
 }
 ```
 
-2. **Test deeply nested image fields (3+ levels)**:
+1. **Test deeply nested image fields (3+ levels)**:
+
 ```rust
 #[test]
 fn test_deep_nested_image_field() {
@@ -1028,7 +1080,8 @@ const blog = defineCollection({
 }
 ```
 
-3. **Test array with object containing image**:
+1. **Test array with object containing image**:
+
 ```rust
 #[test]
 fn test_array_with_image_field() {
@@ -1046,7 +1099,8 @@ const gallery = defineCollection({
 }
 ```
 
-4. **Test mixed formatting**:
+1. **Test mixed formatting**:
+
 ```rust
 #[test]
 fn test_mixed_formatting() {
@@ -1069,7 +1123,8 @@ const mixed = defineCollection({
 }
 ```
 
-5. **Test comments in definitions**:
+1. **Test comments in definitions**:
+
 ```rust
 #[test]
 fn test_comments_in_definitions() {
@@ -1091,6 +1146,7 @@ const blog = defineCollection({
 ```
 
 **Integration Testing**:
+
 - Test with real dummy project: `test/dummy-astro-project/src/content.config.ts`
 - Verify both `articles` and `notes` collections parse correctly
 - Check that `articles.cover` is found (top-level)
@@ -1098,12 +1154,14 @@ const blog = defineCollection({
 - Verify `articles.author` and `articles.relatedArticles` references work
 
 **Success Criteria**:
+
 - All new tests pass
 - All existing tests still pass
 - Dummy project parses correctly
 - No obvious performance issues (Rust is fast, schemas are small)
 
 **Manual Testing Script**:
+
 ```
 1. Open dummy project in app
 2. Navigate to notes collection
@@ -1156,6 +1214,7 @@ const blog = defineCollection({
    - Add module-level documentation explaining the approach
 
 3. **Add inline documentation**:
+
 ```rust
 /// # Zod Schema Parser - Pattern Matching Approach
 ///
@@ -1198,7 +1257,7 @@ const blog = defineCollection({
 /// ```
 ```
 
-4. **Add function-level documentation**:
+1. **Add function-level documentation**:
    - Document each public function with examples
    - Document edge cases handled
    - Document error conditions
@@ -1243,6 +1302,7 @@ Before: ~1100 lines of parser.rs
 After: Should be ~600-700 lines (significant simplification!)
 
 **Success Criteria**:
+
 - Code is clean and well-documented
 - Old line-based approach is completely removed (~400-500 lines deleted)
 - All obsolete helper functions removed
@@ -1269,6 +1329,7 @@ If any checkpoint fails, fix issues before moving to next phase.
 
 **TL;DR - Arrays of Objects with Images/References NOT Supported**:
 We're intentionally NOT supporting `z.array(z.object({ src: image() }))` in this rewrite. It's rare, the UI doesn't support it anyway, and it would add significant complexity. We ONLY support:
+
 - Top-level helpers: `cover: image()`
 - Nested object helpers: `coverImage: z.object({ image: image() })`
 - Arrays of helpers: `tags: z.array(reference('tags'))` ✅ (this works fine!)
@@ -1280,6 +1341,7 @@ We're intentionally NOT supporting `z.array(z.object({ src: image() }))` in this
 **CONFIRMED** by checking actual generated JSON schemas from `test/dummy-astro-project`:
 
 The JSON schemas generated by `astro sync` contain:
+
 - ✅ String constraints: `minLength`, `maxLength`
 - ✅ Number constraints: `minimum`, `maximum`
 - ✅ Format validation: `format: "uri"`, `format: "email"`
@@ -1296,6 +1358,7 @@ The JSON schemas generated by `astro sync` contain:
 ### Gotcha #2: Field Names MUST Match JSON Schema Exactly
 
 JSON schema flattens nested objects with dotted paths:
+
 - `coverImage.image` ← JSON schema has this exact field name
 - `coverImage.alt` ← JSON schema has this exact field name
 - NOT `coverImage` → `image` separately
@@ -1305,6 +1368,7 @@ Our Zod parser MUST output the same dotted paths or the merger won't find them!
 ### Gotcha #3: We ONLY Output Image and Reference Fields
 
 Looking at `extract_zod_enhancements()` in schema_merger.rs:
+
 - It only looks for `type_ == "Image"` or `type_ == "Reference"`
 - It ignores String, Number, Boolean, etc.
 - JSON schema already has all that info
@@ -1314,10 +1378,13 @@ Looking at `extract_zod_enhancements()` in schema_merger.rs:
 ### Gotcha #4: Arrays of Helpers ARE Supported (But Not Arrays of Objects!)
 
 **Supported** ✅:
+
 ```typescript
 tags: z.array(reference('tags'))
 ```
+
 Output:
+
 ```json
 {
   "name": "tags",
@@ -1328,6 +1395,7 @@ Output:
 ```
 
 **NOT Supported** ❌ (intentionally - too complex, UI doesn't support anyway):
+
 ```typescript
 gallery: z.array(z.object({ src: image() }))
 ```

@@ -13,6 +13,7 @@ During Phase 4 cleanup (commits `3eef92c` and `b3389fe`), we removed the TypeScr
 ### What's Broken
 
 References are not working at all:
+
 - Author dropdown in articles is empty (should show 3 authors from `authors.json`)
 - Related Articles multi-select is empty (should show article titles)
 - Any reference field shows no options
@@ -28,6 +29,7 @@ let zod_schema: Option<&str> = None;  // ← ALWAYS PASSING NONE!
 ```
 
 The problem:
+
 1. `parse_astro_config()` successfully loads Zod schemas and stores in `collection.schema`
 2. But we removed those fields during cleanup
 3. So `generate_complete_schema()` has no Zod data to merge
@@ -37,6 +39,7 @@ The problem:
 ### What Was Working
 
 Before cleanup commits:
+
 - TypeScript hybrid parsing in `FrontmatterPanel.tsx` was merging JSON + Zod schemas
 - This provided reference collection names to `ReferenceField.tsx`
 - ReferenceField used those names to load the right collections
@@ -83,6 +86,7 @@ pub struct Collection {
 ```
 
 **Rationale:**
+
 - We need these fields internally in Rust for the merging process
 - Frontend doesn't need them (it gets `complete_schema`)
 - This is cleaner than passing them around as function parameters
@@ -133,6 +137,7 @@ fn generate_complete_schema(collection: &mut Collection, project_path: &str) {
 ```
 
 **What this does:**
+
 1. Loads JSON schema from `.astro/collections/*.schema.json` (structure + types)
 2. Gets Zod schema from `collection.schema` (already loaded by `parse_astro_config()`)
 3. Passes BOTH to schema_merger
@@ -143,6 +148,7 @@ fn generate_complete_schema(collection: &mut Collection, project_path: &str) {
 ### Step 4: Test References Work
 
 Manual testing checklist:
+
 - [ ] Start dev server: `pnpm run dev`
 - [ ] Open test/dummy-astro-project
 - [ ] Check browser console shows: `[Schema] Loaded complete schema for: articles`
@@ -175,6 +181,7 @@ pnpm run check:all
 ```
 
 All checks must pass:
+
 - ✅ TypeScript typecheck
 - ✅ ESLint
 - ✅ Prettier
@@ -200,21 +207,25 @@ rm -f src/lib/parseZodReferences.ts
 Delete these entire sections:
 
 **A. Legacy Zod type definitions (lines ~3-63):**
+
 - `interface ZodField`
 - `interface ZodFieldConstraints`
 - `type ZodFieldType`
 
 **B. Conversion helper functions:**
+
 - `function zodFieldTypeToFieldType()`
 - `function convertZodConstraints()`
 - `function zodFieldToSchemaField()`
 
 **C. Zod parsing functions:**
+
 - `export function parseSchemaJson()`
 - `function isValidParsedSchema()`
 - `interface ParsedSchemaJson`
 
 **What to KEEP in schema.ts:**
+
 - ✅ `SchemaField` interface
 - ✅ `FieldConstraints` interface
 - ✅ `FieldType` enum
@@ -229,6 +240,7 @@ After cleanup, schema.ts should be ~140 lines (down from ~384 lines).
 **File:** `src/components/frontmatter/FrontmatterPanel.tsx`
 
 **Remove these imports:**
+
 ```typescript
 import { parseSchemaJson } from '../../lib/schema'  // DELETE
 import { parseJsonSchema } from '../../lib/parseJsonSchema'  // DELETE
@@ -311,10 +323,12 @@ fn test_collection_with_complete_schema() {
 ## Files Modified
 
 ### Phase 1 (Fix)
+
 - `src-tauri/src/models/collection.rs` - Add #[serde(skip_serializing)] to internal fields
 - `src-tauri/src/commands/project.rs` - Fix generate_complete_schema() to use Zod schema
 
 ### Phase 2 (Cleanup)
+
 - `src/lib/parseJsonSchema.ts` - DELETE
 - `src/lib/parseJsonSchema.test.ts` - DELETE
 - `src/lib/parseZodReferences.ts` - DELETE

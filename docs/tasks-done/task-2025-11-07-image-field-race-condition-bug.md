@@ -17,9 +17,11 @@ When adding a cover image to a book item in the demo project via the frontmatter
 ## Hypothesis and Initial Fixes (2025-11-07)
 
 ### Bug #1: File Switching Race Condition
+
 **Theory**: User switches files while async image processing is in progress, causing frontmatter update to apply to wrong file.
 
 **Fix Applied**: Added file-switching guard in `ImageField.tsx:76-87`:
+
 ```typescript
 const startingFileId = currentFile?.id
 // ... async operation ...
@@ -30,9 +32,11 @@ if (currentFileNow?.id !== startingFileId) {
 ```
 
 ### Bug #2: Rust TOCTOU Race Condition
+
 **Theory**: Multiple simultaneous calls to `copy_file_to_assets_with_override` all check if file exists, then all write their own copies.
 
 **Fix Applied**: Replaced check-then-act pattern with atomic file creation using `OpenOptions::create_new()` in `src-tauri/src/commands/files.rs:257-262`:
+
 ```rust
 match fs::OpenOptions::new()
     .write(true)
@@ -63,6 +67,7 @@ This indicated the root cause had NOT been properly identified. The theoretical 
 The comprehensive logging revealed the actual issue:
 
 **Evidence from logs:**
+
 - `handleFileSelect` called **twice**, just **3ms apart**
 - Call 1: `1762485575450-jawfqozzj` at `03:19:35.450Z`
 - Call 2: `1762485575453-ylphwhxro` at `03:19:35.453Z`
@@ -73,6 +78,7 @@ The comprehensive logging revealed the actual issue:
 ### Why This Happens
 
 The `tauri://drag-drop` event is fired multiple times by Tauri for a single drag operation. This is either:
+
 1. A Tauri framework behavior/bug
 2. Multiple event listeners being registered
 
@@ -116,6 +122,7 @@ globalDragDropTracker.lastTime = now
 ### Added Logs
 
 **TypeScript Layer (`ImageField.tsx`):**
+
 - Unique call ID generated for each `handleFileSelect` invocation
 - Start timestamp and parameters logged
 - Context capture (project path, file, collection)
@@ -124,6 +131,7 @@ globalDragDropTracker.lastTime = now
 - Success/error/finally logging
 
 **TypeScript Layer (`processFileToAssets.ts`):**
+
 - Function entry with all parameters
 - isInProject check results
 - Copy vs reuse path decisions
@@ -131,6 +139,7 @@ globalDragDropTracker.lastTime = now
 - Success with final result
 
 **Rust Layer (`src-tauri/src/commands/files.rs`):**
+
 - Function entry with source path, collection, current file
 - Validated paths
 - Assets directory determination
@@ -165,15 +174,18 @@ All logs use prefixes: `[ImageField:{callId}]`, `[processFileToAssets]`, `[COPY_
 ## Files Modified
 
 ### Initial Attempts (Failed)
+
 - `src/components/frontmatter/fields/ImageField.tsx` - Added file-switching guard (didn't fix bug)
 - `src-tauri/src/commands/files.rs` - Changed to atomic file operations (didn't fix bug)
 
 ### Diagnostic Logging
+
 - `src/components/frontmatter/fields/ImageField.tsx` - Added comprehensive call tracing
 - `src/lib/files/fileProcessing.ts` - Added processing pipeline logging
 - `src-tauri/src/commands/files.rs` - Added Rust function logging
 
 ### Actual Fix
+
 - **`src/components/tauri/FileUploadButton.tsx:174-191`** - Added deduplication for Tauri drag-drop events
 
 ## Testing Results
@@ -181,12 +193,14 @@ All logs use prefixes: `[ImageField:{callId}]`, `[processFileToAssets]`, `[COPY_
 **✅ FIX CONFIRMED WORKING (2025-11-07)**
 
 Test performed:
+
 1. Opened demo project
 2. Opened `braiding-sweetgrass.mdx`
 3. Dragged image to cover field
 4. **Result**: Only ONE file created (no `-2` duplicate)
 
 Console logs showed successful deduplication:
+
 ```
 [FileUploadButton] Drag-drop event received, disabled: false, isProcessing: false
 [FileUploadButton] Processing file drop: /Users/danny/Desktop/Brading Sweetgrass Cover.jpg
@@ -199,6 +213,7 @@ Server logs confirmed only ONE Rust function call (no duplicate file creation).
 ## Cleanup
 
 Removed diagnostic logging from:
+
 - `ImageField.tsx` - Removed verbose call tracing
 - `processFileToAssets.ts` - Removed step-by-step logging
 - `src-tauri/src/commands/files.rs` - Removed Rust debug logging

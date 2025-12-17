@@ -197,11 +197,13 @@ Created comprehensive `scripts/prepare-release.js` that:
 - Shows clear next steps and reminders
 
 **Usage:**
+
 ```bash
 npm run prepare-release v1.0.9
 ```
 
 The script will:
+
 1. Run comprehensive checks
 2. Update all version numbers consistently
 3. Optionally execute git commands interactively
@@ -218,6 +220,7 @@ Added `prepare-release` script to package.json. The existing `check:all` script 
 The auto-update and release system is now fully implemented with the following capabilities:
 
 **For Developers (Release Process):**
+
 1. Use `npm run prepare-release v1.0.9` to prepare a new release
 2. Script handles all version updates and verification
 3. Interactive git command execution
@@ -225,6 +228,7 @@ The auto-update and release system is now fully implemented with the following c
 5. Manually publish the draft release on GitHub
 
 **For Users (Auto-Updates):**
+
 1. App checks for updates 5 seconds after launch
 2. Users receive native dialog with update details
 3. Download progress is shown during update
@@ -232,6 +236,7 @@ The auto-update and release system is now fully implemented with the following c
 5. Updates are cryptographically verified using embedded public key
 
 **System Architecture:**
+
 - **Update Server**: GitHub Releases with `latest.json` endpoint
 - **Signing**: Tauri's built-in cryptographic verification
 - **Distribution**: Multi-platform builds via GitHub Actions
@@ -240,11 +245,13 @@ The auto-update and release system is now fully implemented with the following c
 ### 5.2 Usage Instructions ✅ DONE
 
 **To create a new release:**
+
 ```bash
 npm run prepare-release v1.0.9
 ```
 
 **What the script does:**
+
 - ✅ Verifies git working directory is clean
 - ✅ Runs comprehensive quality checks
 - ✅ Updates versions in package.json, Cargo.toml, tauri.conf.json
@@ -253,6 +260,7 @@ npm run prepare-release v1.0.9
 - ✅ Provides clear next steps and reminders
 
 **After pushing the tag:**
+
 - GitHub Actions builds the app for macOS
 - A draft release is created automatically
 - Update artifacts (`latest.json`) are generated

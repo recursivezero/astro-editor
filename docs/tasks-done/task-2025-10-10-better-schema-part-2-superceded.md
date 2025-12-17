@@ -161,10 +161,12 @@ function extractReferenceInfo(anyOfArray: JsonSchemaProperty[]): {
 We created a minimal test case to diagnose reference behavior:
 
 **Test Collections:**
+
 - `authors.json` - File-based collection with 3 authors (danny-smith, jane-doe, john-developer)
 - `articles` - Has `author: reference('authors')` and `relatedArticles: z.array(reference('articles'))`
 
 **Test Data:**
+
 - first-article.md → `author: danny-smith`
 - comprehensive-markdown-test.md → `author: jane-doe`, `relatedArticles: [first-article]`
 - second-article.md → `author: john-developer`, `relatedArticles: [first-article, comprehensive-markdown-test]`
@@ -265,11 +267,13 @@ function improveAcronyms(label: string): string {
 ### Implementation Completed (Phase 1 & 2)
 
 **Type System:**
+
 - ✅ Single `SchemaField` interface (no more dual types)
 - ✅ ZodField made internal-only for parsing
 - ✅ All 425 tests passing
 
 **Field Types Implemented:**
+
 - ✅ Nested objects (flattened with dot notation: `author.name`)
 - ✅ References (single + array) - detection works, collection name extraction pending
 - ✅ Arrays (string, number, complex fallback to YamlField)
@@ -277,27 +281,31 @@ function improveAcronyms(label: string): string {
 - ✅ Visual grouping for nested fields in FrontmatterPanel
 
 **Store Enhancements:**
+
 - ✅ `setNestedValue()`, `getNestedValue()`, `deleteNestedValue()` for dot notation handling
 
 ---
 
 ## Success Criteria
 
-### Phase 3 Complete When:
+### Phase 3 Complete When
+
 - [ ] Reference fields load collection options correctly
 - [ ] Both single and array references work
 - [ ] Self-references work (articles → articles)
 - [ ] Nested object references work
 - [ ] Production schemas tested
 
-### Phase 4 Complete When:
+### Phase 4 Complete When
+
 - [ ] Constraints display professionally formatted
 - [ ] Nested field labels polished (proper acronyms)
 - [ ] Documentation complete and accurate
 - [ ] No console errors/warnings
 - [ ] Production ready
 
-### Overall Success:
+### Overall Success
+
 - [ ] Works with Starlight schemas
 - [ ] Works with complex blog schemas
 - [ ] UI is polished and intuitive
@@ -309,6 +317,7 @@ function improveAcronyms(label: string): string {
 ## Scope Boundaries
 
 **In Scope:**
+
 - ✅ Type unification
 - 🔄 Reference support (collection name extraction pending)
 - ✅ Nested object flattening
@@ -316,6 +325,7 @@ function improveAcronyms(label: string): string {
 - ✅ Enums, literals, primitives
 
 **Out of Scope (Future):**
+
 - ❌ Reference autocomplete with fuzzy search
 - ❌ Visual object array editor
 - ❌ Discriminated union form builder
@@ -329,6 +339,7 @@ function improveAcronyms(label: string): string {
 ### Current State Analysis
 
 **1. Hybrid Schema Parsing (FrontmatterPanel.tsx):**
+
 ```typescript
 // Current: Either/or approach
 if (json_schema) {
@@ -344,6 +355,7 @@ if (schema) {
 **2. Reference Format in Frontmatter:**
 
 Astro uses simple string IDs (confirmed working in dev server):
+
 ```yaml
 # Single reference
 author: danny-smith
@@ -353,6 +365,7 @@ relatedArticles: [first-article, comprehensive-markdown-test]
 ```
 
 Our store already handles this correctly:
+
 - Single: `updateFrontmatterField('author', 'danny-smith')`
 - Array: `updateFrontmatterField('relatedArticles', ['first-article', 'other-article'])`
 - Nested: `updateFrontmatterField('seo.author', 'danny-smith')` → converts to `{ seo: { author: 'danny-smith' } }`
@@ -360,6 +373,7 @@ Our store already handles this correctly:
 **3. Display Strategy Issues:**
 
 Current ReferenceField (lines 69-74):
+
 ```typescript
 const title =
   (file.frontmatter?.title as string | undefined) ||
@@ -434,7 +448,7 @@ export function parseZodSchemaReferences(
 }
 ```
 
-**Limitation:** This won't handle nested references (seo.author) in the initial implementation. The Zod schema string doesn't preserve deep nesting paths in a parseable way. We'll handle top-level references only for Phase 3.
+**Limitation:** This won't handle nested references (seo.author) in the initial implementation. The Zod schema string doesn't preserve deep nesting paths in a parsable way. We'll handle top-level references only for Phase 3.
 
 #### Step 2: Simplify JSON Schema Parser
 
@@ -541,6 +555,7 @@ const schema = React.useMemo(() => {
 **Why:** Current code only tries `title` and `name`. Need to try more common fields before falling back to filename.
 
 **Display priority order:**
+
 1. `title` - most common display field
 2. `name` - second most common
 3. `slug` - good for URL-based IDs
@@ -588,11 +603,13 @@ const options: ReferenceOption[] = React.useMemo(() => {
 **Action:** Check if `useCollectionFilesQuery` works for file-based collections.
 
 The authors collection uses `file()` loader. Backend needs to:
+
 1. Detect file-based collections
 2. Load and parse JSON
 3. Return entries in same format as glob collections
 
 **If backend doesn't support file collections yet:**
+
 - Add to Rust backend to handle `file()` loader
 - Parse JSON and return entries with proper structure
 
@@ -621,6 +638,7 @@ The authors collection uses `file()` loader. Backend needs to:
 ### Edge Cases & Limitations
 
 **Handled in Phase 3:**
+
 - ✅ Top-level single references
 - ✅ Top-level array references
 - ✅ Self-references (articles → articles)
@@ -628,15 +646,16 @@ The authors collection uses `file()` loader. Backend needs to:
 - ✅ Fields without schema
 
 **Out of Scope (Future):**
+
 - ❌ Nested references (seo.author: reference('authors'))
-  - Zod regex can't reliably track nesting context
-  - Would need more sophisticated AST parsing
-  - Not a common pattern in Astro sites
+    - Zod regex can't reliably track nesting context
+    - Would need more sophisticated AST parsing
+    - Not a common pattern in Astro sites
 
 - ❌ References in array of objects
-  - Example: `links: z.array(z.object({ author: reference('authors') }))`
-  - Too complex for regex parsing
-  - Will render as YamlField (JSON textarea)
+    - Example: `links: z.array(z.object({ author: reference('authors') }))`
+    - Too complex for regex parsing
+    - Will render as YamlField (JSON textarea)
 
 ### File-Based Collection Display Strategy
 
@@ -645,6 +664,7 @@ The authors collection uses `file()` loader. Backend needs to:
 **Solution:** Try common display fields in priority order, but DON'T search for "any string property" (could grab description/bio).
 
 **Fallback hierarchy:**
+
 1. `title` - most common
 2. `name` - second most common
 3. `slug` - URL-based identifiers
@@ -653,6 +673,7 @@ The authors collection uses `file()` loader. Backend needs to:
 6. `file.name` - filename as final fallback
 
 **Try these in multiple locations:**
+
 - `frontmatter.*` (glob collections)
 - `data.*` (file collections - if backend exposes this way)
 - Direct properties (varies by backend implementation)

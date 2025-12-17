@@ -21,6 +21,7 @@ Based on codebase analysis, the project setup flow has multiple failure points:
 ## Current Logging State
 
 **Frontend Logging (via @tauri-apps/plugin-log → macOS Console):**
+
 - ✅ Basic error logging in projectStore.ts (5 locations)
 - ✅ Basic error logging in editorStore.ts (2 locations)
 - ✅ Recovery system error logging
@@ -28,6 +29,7 @@ Based on codebase analysis, the project setup flow has multiple failure points:
 - ❌ No detailed step-by-step project setup logging
 
 **Backend Logging (via log crate → macOS Console):**
+
 - ✅ IDE operations comprehensively logged
 - ✅ Blocked directory access logged
 - ❌ Project setup operations have minimal logging
@@ -42,6 +44,7 @@ Based on codebase analysis, the project setup flow has multiple failure points:
 **Goal:** Make all project setup steps and errors clearly visible in macOS Console.app
 
 **Key Changes:**
+
 - Add app version and platform to startup logs
 - Add step-by-step project setup logging  
 - Ensure all Rust errors are properly logged
@@ -52,6 +55,7 @@ Based on codebase analysis, the project setup flow has multiple failure points:
 Add detailed logging at each step of project setup:
 
 **Frontend (projectStore.ts):**
+
 ```typescript
 // App startup context (log once on app start)
 await info(`Astro Editor v${appVersion} started on ${platform}`)
@@ -69,6 +73,7 @@ await error(`Astro Editor [PROJECT_SETUP] Failed at step: ${currentStep} - Path:
 ```
 
 **Backend (Rust commands):**
+
 ```rust
 // In scan_project command
 info!("Astro Editor [PROJECT_SCAN] Scanning project at path: {}", project_path);
@@ -101,29 +106,35 @@ window.addEventListener('unhandledrejection', async (event) => {
 ### 4. Specific Implementation Steps
 
 #### Step 1: App Context Logging
+
 1. Add app version/platform logging to main.tsx startup
 2. Create diagnostic helper in `src/lib/diagnostics.ts`
 
 #### Step 2: Enhanced Frontend Logging  
+
 1. Modify `projectStore.ts` with step-by-step logging
 2. Add error context to all project-related failures
 3. Add global error handlers for JS errors
 
 #### Step 3: Enhanced Backend Logging
+
 1. Add comprehensive logging to `scan_project` commands
 2. Add logging to project registry file operations  
 3. Ensure all Rust errors include path context
 
 #### Step 4: Update Documentation
+
 1. Update `docs/logging.md` with exact Console.app instructions
 2. Add specific search terms users should use
 
 ### 5. Files to Modify
 
 **New Files:**
+
 - `src/lib/diagnostics.ts` - App version/platform helpers
 
 **Modified Files:**
+
 - `src/main.tsx` - Add global error handlers and startup logging
 - `src/store/projectStore.ts` - Enhanced project setup logging
 - `src/lib/project-registry/index.ts` - Registry operation logging  
@@ -144,17 +155,20 @@ After implementation, when a user reports project setup issues:
 ### 7. Log Categories and Levels
 
 **Info Level:**
+
 - `Astro Editor [PROJECT_SETUP]` - Step-by-step project setup progress
 - `Astro Editor [PROJECT_SCAN]` - Backend project scanning operations  
 - `Astro Editor [PROJECT_DISCOVERY]` - Project metadata discovery
 - `Astro Editor` startup with version info
 
 **Error Level:**
+
 - All failures with step identification and full context
 - `Astro Editor [JS_ERROR]` - JavaScript runtime errors
 - `Astro Editor [PROMISE_REJECTION]` - Unhandled promise rejections
 
 **Debug Level:**
+
 - Project ID generation details
 - Settings loading specifics
 - File path processing details
@@ -171,6 +185,7 @@ After implementation, when a user reports project setup issues:
 ### 9. Testing Strategy
 
 **Manual Testing:**
+
 - Test with various project types (valid/invalid Astro projects)
 - Test with permission issues  
 - Test with corrupted package.json
@@ -178,6 +193,7 @@ After implementation, when a user reports project setup issues:
 - Verify all scenarios produce searchable logs in Console.app
 
 **Verification:**
+
 - Search for `Astro Editor [PROJECT_SETUP]` shows complete project setup flow
 - Search for `Astro Editor` shows all app logs including startup info with version
 - All error scenarios include project path and step context

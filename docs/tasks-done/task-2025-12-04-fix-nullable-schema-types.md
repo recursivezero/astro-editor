@@ -634,6 +634,7 @@ describe('isFrontmatterDirty tracking', () => {
 ### Edge Case 1: File With No Initial Frontmatter
 
 If a file has no frontmatter initially (`rawFrontmatter` is empty) and the user adds frontmatter via the panel, this is handled correctly because:
+
 - Adding frontmatter via the panel sets `isFrontmatterDirty: true`
 - The save will use the parsed `frontmatter` object (not raw)
 - The Rust match handles empty `raw_frontmatter` via the `!raw.trim().is_empty()` guard
@@ -643,6 +644,7 @@ If a file has no frontmatter initially (`rawFrontmatter` is empty) and the user 
 If a user edits frontmatter then undoes all changes back to the original state, `isFrontmatterDirty` will still be `true`. We track "was modified during this session" not "is different from original".
 
 **This is acceptable behavior** because:
+
 1. The save will just normalize frontmatter (no data loss)
 2. Tracking deep equality would add complexity for minimal benefit
 3. Users rarely undo all frontmatter changes
@@ -652,6 +654,7 @@ If a user edits frontmatter then undoes all changes back to the original state, 
 The recovery system (`src/lib/recovery.ts`) saves editor state when save fails. Currently it saves `frontmatter` but not `isFrontmatterDirty` or `rawFrontmatter`.
 
 **For now, leave recovery as-is**. When recovering from a crash:
+
 - The recovered `frontmatter` will be re-serialized on next save
 - This is acceptable because recovery is rare and data integrity matters more than formatting
 
@@ -660,6 +663,7 @@ If this becomes an issue, a future task could enhance recovery to preserve `rawF
 ### Edge Case 4: Opening Same File Twice
 
 If a user opens a file, makes content-only edits, saves (preserving raw frontmatter), then closes and reopens:
+
 - `rawFrontmatter` is re-loaded from disk
 - `isFrontmatterDirty` is reset to `false`
 - Everything works correctly
@@ -667,10 +671,12 @@ If a user opens a file, makes content-only edits, saves (preserving raw frontmat
 ### Testing Notes
 
 Follow existing test patterns in:
+
 - `src/store/__tests__/storeQueryIntegration.test.ts` for store integration tests
 - `src/hooks/editor/useEditorHandlers.test.ts` for hook tests
 
 Test all dirty state transitions:
+
 1. Content edit → `isDirty: true`, `isFrontmatterDirty: false`
 2. Frontmatter edit → `isDirty: true`, `isFrontmatterDirty: true`
 3. Both edited → `isDirty: true`, `isFrontmatterDirty: true`

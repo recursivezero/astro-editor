@@ -13,7 +13,7 @@
 
 After expert security analysis considering Astro Editor's context as a **local desktop markdown editor**, the original audit overstated risks by applying web application security standards to a desktop application. The application demonstrates appropriate security controls for its intended use case.
 
-### Actual Risk Areas (Revised):
+### Actual Risk Areas (Revised)
 
 - **Path Traversal:** File operations need project-scoped validation (**High Priority**)
 - **Shell Argument Sanitization:** Command injection through file paths (**High Priority**)
@@ -25,6 +25,7 @@ After expert security analysis considering Astro Editor's context as a **local d
 ## **Local Desktop App Context**
 
 This security review has been **revised** to account for the fact that Astro Editor is a:
+
 - **Local desktop application** (not a web app)
 - **Markdown editor for trusted user projects** (not handling untrusted content from the web)
 - **Single-user application** (no authentication or multi-tenancy concerns)
@@ -179,16 +180,16 @@ if let Some(cap) = Regex::new(r"\.regex\s*\(\s*/([^/]+)/([gimuy]*)\s*\)")
 **Critical Issues:**
 
 - **GTK3 Bindings:** Multiple unmaintained gtk-rs crates (RUSTSEC-2024-0411 through 0420)
-  - **Risk:** Medium - UI framework dependencies
-  - **Recommendation:** Monitor for GTK4 migration path in Tauri
+    - **Risk:** Medium - UI framework dependencies
+    - **Recommendation:** Monitor for GTK4 migration path in Tauri
 
 - **glib Iterator Unsoundness:** RUSTSEC-2024-0429
-  - **Risk:** Medium - Potential memory safety issues
-  - **Recommendation:** Update to patched version when available
+    - **Risk:** Medium - Potential memory safety issues
+    - **Recommendation:** Update to patched version when available
 
 - **proc-macro-error:** RUSTSEC-2024-0370 (Unmaintained)
-  - **Risk:** Low - Development-time dependency
-  - **Recommendation:** Find maintained alternative
+    - **Risk:** Low - Development-time dependency
+    - **Recommendation:** Find maintained alternative
 
 ---
 
@@ -197,6 +198,7 @@ if let Some(cap) = Regex::new(r"\.regex\s*\(\s*/([^/]+)/([gimuy]*)\s*\)")
 ### **HIGH Priority** (Address Soon)
 
 #### 1. Path Traversal Prevention
+
 **Location:** `src-tauri/src/commands/files.rs`
 
 Add project-scoped path validation to all file operations:
@@ -232,9 +234,11 @@ pub async fn read_file(file_path: String, project_root: String) -> Result<String
 **Important:** Ensure path validation updates when users switch projects or open new projects.
 
 #### 2. Shell Argument Sanitization & IDE Integration
+
 **Location:** `src-tauri/src/commands/` and preferences UI
 
 Implement Danny's dropdown approach:
+
 - Replace text input with dropdown of whitelisted editors in preferences
 - Add shell escaping for file paths before passing to commands
 - Validate file paths exist and are within project bounds
@@ -243,6 +247,7 @@ Implement Danny's dropdown approach:
 ### **MEDIUM Priority** (Address Eventually)
 
 #### 3. File System Scope Restriction (Revised Approach)
+
 **Location:** `src-tauri/capabilities/default.json`
 
 Use allow-all + explicit deny approach (Astro sites can be anywhere):
@@ -270,6 +275,7 @@ Use allow-all + explicit deny approach (Astro sites can be anywhere):
 ```
 
 **Additional Requirements:**
+
 - Add toast notification when user tries to open project in denied directory
 - Update user guide to document disallowed directories
 - Define supported IDE list for dropdown: VSCode, Cursor, Vim, Neovim, Emacs, Sublime Text
@@ -277,6 +283,7 @@ Use allow-all + explicit deny approach (Astro sites can be anywhere):
 ### **LOW Priority** (Optional/Nice to Have)
 
 #### 4. Basic CSP (Defense in Depth)
+
 **Location:** `src-tauri/tauri.conf.json`
 
 ```json
@@ -284,6 +291,7 @@ Use allow-all + explicit deny approach (Astro sites can be anywhere):
 ```
 
 #### 5. Regex Safety Checks
+
 **Location:** `src-tauri/src/parser.rs`
 
 Add basic complexity validation for user regex patterns.
@@ -315,18 +323,21 @@ Add basic complexity validation for user regex patterns.
 
 After expert security analysis considering the local desktop application context, **Astro Editor demonstrates appropriate security controls for its intended use case**. The original audit overstated risks by applying web application security standards to a desktop application.
 
-### Key Findings:
+### Key Findings
+
 - **Only 2 issues require immediate attention** (path traversal and shell argument sanitization)
 - **File system access patterns are appropriate** for a project-based markdown editor
 - **Code parsing is safely sandboxed** and doesn't execute user code
 - **CSP and other web security controls** provide minimal benefit for this use case
 
-### Recommended Actions:
+### Recommended Actions
+
 1. **Implement the HIGH priority items** (path validation, shell sanitization, IDE production issue investigation)
 2. **Consider the MEDIUM priority items** for defense in depth (file system scoping, toast notifications, user guide updates)
 3. **LOW priority items are optional** and not critical for security
 
-### Key Implementation Notes:
+### Key Implementation Notes
+
 - Use **allow-all + explicit deny** approach for file system access (Astro sites can be anywhere)
 - Ensure **path validation updates** when users switch projects
 - **Investigate IDE production build issue** - works in dev but fails silently in production
